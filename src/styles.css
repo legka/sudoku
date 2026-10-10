@@ -244,12 +244,32 @@ select {
   border-bottom: 2px solid var(--line-strong);
 }
 
-.cell.cage-right {
-  border-right: 1.5px dashed var(--accent);
+/*
+ * Cage outlines: each cell draws a dashed line inset from its edges on every
+ * side that faces another cage. Two neighbouring cages therefore show two
+ * parallel lines, which keeps each cage's boundary distinct.
+ */
+.frame {
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border: 0 dashed var(--accent);
 }
 
-.cell.cage-bottom {
-  border-bottom: 1.5px dashed var(--accent);
+.cell.cage-top .frame {
+  border-top-width: 1.5px;
+}
+
+.cell.cage-right .frame {
+  border-right-width: 1.5px;
+}
+
+.cell.cage-bottom .frame {
+  border-bottom-width: 1.5px;
+}
+
+.cell.cage-left .frame {
+  border-left-width: 1.5px;
 }
 
 /* The last column and row sit on the board border. */
@@ -309,8 +329,11 @@ select {
 
 .cage-sum {
   position: absolute;
-  top: 3%;
-  left: 5%;
+  top: 2px;
+  left: 2px;
+  /* Matches the cell so the dashed outline breaks around the sum. */
+  background-color: inherit;
+  padding: 1px 2px;
   font-size: 2.6cqw;
   font-weight: 700;
   color: var(--accent);

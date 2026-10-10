@@ -88,7 +88,10 @@ export class App {
         notes.push(note);
       }
 
-      root.append(notesEl, value);
+      const frame = document.createElement('span');
+      frame.className = 'frame';
+
+      root.append(notesEl, value, frame);
       this.ui.board.appendChild(root);
       this.cells.push({ root, value, notes });
     }
@@ -270,7 +273,10 @@ export class App {
 
   // ---- rendering ----------------------------------------------------------
 
-  /** Sets box and cage borders, and places cage sum labels. Runs once per puzzle. */
+  /**
+   * Sets box borders and cage outlines, and places cage sum labels.
+   * Runs once per puzzle.
+   */
   private layoutPuzzle(): void {
     const puzzle = this.game!.puzzle;
     this.cageOf = cageIndexOf(puzzle.cages);
@@ -278,19 +284,20 @@ export class App {
     for (const label of this.cageLabels) label.remove();
     this.cageLabels = [];
 
+    const cellClasses = ['edge-right', 'edge-bottom', 'cage-top', 'cage-right', 'cage-bottom', 'cage-left'];
     for (let i = 0; i < CELLS; i++) {
       const classes = this.cells[i].root.classList;
-      classes.remove('edge-right', 'edge-bottom', 'cage-right', 'cage-bottom');
-      if (colOf(i) < SIZE - 1) {
-        const j = i + 1;
-        if (boxOf(i) !== boxOf(j)) classes.add('edge-right');
-        else if (this.cageOf[i] !== this.cageOf[j]) classes.add('cage-right');
-      }
-      if (rowOf(i) < SIZE - 1) {
-        const j = i + SIZE;
-        if (boxOf(i) !== boxOf(j)) classes.add('edge-bottom');
-        else if (this.cageOf[i] !== this.cageOf[j]) classes.add('cage-bottom');
-      }
+      classes.remove(...cellClasses);
+      if (colOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + 1)) classes.add('edge-right');
+      if (rowOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + SIZE)) classes.add('edge-bottom');
+
+      const cage = this.cageOf[i];
+      if (cage < 0) continue;
+      // Outline every side that faces another cage or the board edge.
+      if (rowOf(i) === 0 || this.cageOf[i - SIZE] !== cage) classes.add('cage-top');
+      if (colOf(i) === SIZE - 1 || this.cageOf[i + 1] !== cage) classes.add('cage-right');
+      if (rowOf(i) === SIZE - 1 || this.cageOf[i + SIZE] !== cage) classes.add('cage-bottom');
+      if (colOf(i) === 0 || this.cageOf[i - 1] !== cage) classes.add('cage-left');
     }
 
     for (const cage of puzzle.cages) {
