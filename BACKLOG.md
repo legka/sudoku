@@ -46,7 +46,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: `change` events on the `#mode` and `#difficulty` `<select>` elements immediately trigger `newGame()`. On mobile touch devices, scrolling or accidental taps destroy the current game without warning or confirmation.
 - **Proposed Solution**: Only apply mode/difficulty selections when the user explicitly clicks the "New game" button, or prompt for confirmation if moves have already been made.
 
-### [UX-02] Optional / configurable instant mistake detection
+### ~~[UX-02] Optional / configurable instant mistake detection~~
 - **Priority**: Medium
 - **Files**: [`src/core/game.ts`](file:///home/oleg/work/sudoku/src/core/game.ts#L50-L52), [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L328)
 - **Description**: `Game.isWrong()` checks input directly against `puzzle.solution[i]`, turning wrong cells red and incrementing mistakes instantly. In Killer Sudoku, this spoils trial deductions that may locally sum correctly.

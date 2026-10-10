@@ -14,6 +14,7 @@ export interface GameSnapshot extends Snapshot {
   hints: number;
   elapsedSeconds: number;
   finished: boolean;
+  autoCheckMistakes?: boolean;
 }
 
 const UNDO_LIMIT = 500;
@@ -28,6 +29,7 @@ export class Game {
   hints = 0;
   elapsedSeconds = 0;
   finished = false;
+  autoCheckMistakes = true;
 
   private undoStack: Snapshot[] = [];
   private cagePeers: number[][];
@@ -41,6 +43,7 @@ export class Game {
     this.hints = state?.hints ?? 0;
     this.elapsedSeconds = state?.elapsedSeconds ?? 0;
     this.finished = state?.finished ?? false;
+    this.autoCheckMistakes = state?.autoCheckMistakes ?? true;
 
     this.cagePeers = Array.from({ length: CELLS }, () => []);
     for (const cage of puzzle.cages ?? []) {
@@ -99,7 +102,7 @@ export class Game {
       this.notes[i] = 0;
       this.clearPeerNotes(i, d);
     });
-    if (d !== this.puzzle.solution[i]) this.mistakes++;
+    if (this.autoCheckMistakes && d !== this.puzzle.solution[i]) this.mistakes++;
     this.checkFinished();
     return true;
   }
@@ -132,6 +135,15 @@ export class Game {
     this.hints++;
     this.checkFinished();
     return true;
+  }
+
+  /** Validates all currently entered numbers against the solution, returning mistake count. */
+  checkMistakes(): number {
+    let wrongCount = 0;
+    for (let i = 0; i < CELLS; i++) {
+      if (this.isWrong(i)) wrongCount++;
+    }
+    return wrongCount;
   }
 
   undo(): boolean {
@@ -169,6 +181,7 @@ export class Game {
       hints: this.hints,
       elapsedSeconds: this.elapsedSeconds,
       finished: this.finished,
+      autoCheckMistakes: this.autoCheckMistakes,
     };
   }
 }

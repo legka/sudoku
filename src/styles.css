@@ -156,6 +156,15 @@ select {
   font-weight: 500;
 }
 
+.settings label.checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  min-height: 40px;
+}
+
 select {
   min-height: 40px;
   padding: 0 10px;

@@ -38,6 +38,8 @@ export class App {
   /** SVG layer with cage outlines and sums; absent for classic puzzles. */
   private cageLayer: SVGSVGElement | null = null;
 
+  private manualChecked = false;
+
   private readonly ui = {
     board: byId<HTMLDivElement>('board'),
     loading: byId<HTMLDivElement>('loading'),
@@ -46,10 +48,12 @@ export class App {
     mode: byId<HTMLSelectElement>('mode'),
     difficulty: byId<HTMLSelectElement>('difficulty'),
     newGame: byId<HTMLButtonElement>('new-game'),
+    autoCheck: byId<HTMLInputElement>('auto-check'),
     undo: byId<HTMLButtonElement>('undo'),
     erase: byId<HTMLButtonElement>('erase'),
     notes: byId<HTMLButtonElement>('notes'),
     hint: byId<HTMLButtonElement>('hint'),
+    check: byId<HTMLButtonElement>('check'),
     pad: byId<HTMLDivElement>('pad'),
     win: byId<HTMLDialogElement>('win'),
     winText: byId<HTMLParagraphElement>('win-text'),
@@ -121,6 +125,18 @@ export class App {
     this.ui.erase.addEventListener('click', () => this.afterChange(this.game?.erase()));
     this.ui.hint.addEventListener('click', () => this.afterChange(this.game?.hint()));
     this.ui.notes.addEventListener('click', () => this.toggleNotes());
+    this.ui.check.addEventListener('click', () => {
+      this.manualChecked = true;
+      this.render();
+    });
+    this.ui.autoCheck.addEventListener('change', () => {
+      if (this.game) {
+        this.game.autoCheckMistakes = this.ui.autoCheck.checked;
+        this.persist();
+      }
+      this.manualChecked = false;
+      this.render();
+    });
 
     this.ui.newGame.addEventListener('click', () => this.startNewFromSettings());
 
@@ -198,6 +214,7 @@ export class App {
   private afterChange(changed: boolean | undefined): void {
     if (!this.game) return;
     if (changed) {
+      this.manualChecked = false;
       this.persist();
       if (this.game.finished) this.showWin();
     }
@@ -248,8 +265,10 @@ export class App {
 
   private setGame(game: Game): void {
     this.game = game;
+    this.manualChecked = false;
     this.ui.mode.value = game.puzzle.mode;
     this.ui.difficulty.value = game.puzzle.difficulty;
+    this.ui.autoCheck.checked = game.autoCheckMistakes;
     this.layoutPuzzle();
     this.persist();
     this.render();
@@ -326,13 +345,14 @@ export class App {
 
     const sel = g.selected;
     const selValue = sel === null ? 0 : g.values[sel];
+    const showWrong = g.autoCheckMistakes || this.manualChecked;
 
     for (let i = 0; i < CELLS; i++) {
       const view = this.cells[i];
       const v = g.values[i];
       const cls = view.root.classList;
       cls.toggle('given', g.isGiven(i));
-      cls.toggle('wrong', g.isWrong(i));
+      cls.toggle('wrong', showWrong && g.isWrong(i));
       cls.toggle('selected', i === sel);
       cls.toggle('peer', sel !== null && i !== sel && this.related(i, sel));
       cls.toggle('same', selValue !== 0 && v === selValue && i !== sel);
@@ -351,6 +371,7 @@ export class App {
     this.ui.notes.classList.toggle('active', this.noteMode);
     this.ui.hint.disabled = g.finished;
     this.ui.erase.disabled = g.finished;
+    this.ui.check.disabled = g.finished;
   }
 
   /** Whether cell i shares a row, column, box or (killer) cage with cell sel. */

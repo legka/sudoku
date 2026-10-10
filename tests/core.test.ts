@@ -213,4 +213,18 @@ describe('Game', () => {
     g.inputDigit(4, false);
     expect(g.notes[30] & (1 << 4)).toBe(0);
   });
+
+  it('supports disabling automatic mistake checking', () => {
+    const p = puzzle();
+    const g = new Game(p, { autoCheckMistakes: false });
+    const empties = p.givens.flatMap((v, i) => (v === 0 ? [i] : []));
+    const i = empties[0];
+    const wrong = p.solution[i] === 1 ? 2 : 1;
+
+    g.select(i);
+    g.inputDigit(wrong, false);
+    expect(g.values[i]).toBe(wrong);
+    expect(g.mistakes).toBe(0);
+    expect(g.checkMistakes()).toBe(1);
+  });
 });
