@@ -114,7 +114,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: `touch-action: manipulation` is set on `button, select` but omitted from `.board` and `.cell`. On mobile webviews and mobile browsers (iOS Safari, Android Chrome), tapping board cells can incur up to a 300ms double-tap zoom delay before `click` fires.
 - **Proposed Solution**: Add `touch-action: manipulation` (or `touch-action: none`) to `.board` and `.cell`.
 
-### [PERF-02] Guard DOM text mutations in `render()` to eliminate 810 writes per action
+### ~~[PERF-02] Guard DOM text mutations in `render()` to eliminate 810 writes per action~~
 - **Priority**: Medium
 - **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L333-L338)
 - **Description**: On every move or selection shift, `render()` unconditionally assigns `.textContent` across all 81 cell values and 729 note spans (810 total DOM writes). In browser engine benchmarks, guarding assignments with `if (node.textContent !== next) node.textContent = next;` reduces render cost from 0.59ms to 0.05ms (11x speedup), eliminating frame drops during rapid arrow-key navigation.

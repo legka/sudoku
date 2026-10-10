@@ -400,15 +400,20 @@ export class App {
       cls.toggle('peer', sel !== null && i !== sel && this.related(i, sel));
       cls.toggle('same', selValue !== 0 && v === selValue && i !== sel);
 
-      view.value.textContent = v ? String(v) : '';
+      const valStr = v ? String(v) : '';
+      if (view.value.textContent !== valStr) view.value.textContent = valStr;
       for (let d = 1; d <= SIZE; d++) {
         const marked = !v && (g.notes[i] & bit(d)) !== 0;
-        view.notes[d - 1].textContent = marked ? String(d) : '';
+        const noteStr = marked ? String(d) : '';
+        const noteNode = view.notes[d - 1];
+        if (noteNode.textContent !== noteStr) noteNode.textContent = noteStr;
       }
     }
 
-    this.ui.timer.textContent = formatTime(g.elapsedSeconds);
-    this.ui.mistakes.textContent = String(g.mistakes);
+    const timerStr = formatTime(g.elapsedSeconds);
+    if (this.ui.timer.textContent !== timerStr) this.ui.timer.textContent = timerStr;
+    const mistakesStr = String(g.mistakes);
+    if (this.ui.mistakes.textContent !== mistakesStr) this.ui.mistakes.textContent = mistakesStr;
     this.ui.undo.disabled = !g.canUndo;
     this.ui.notes.setAttribute('aria-pressed', String(this.noteMode));
     this.ui.notes.classList.toggle('active', this.noteMode);
