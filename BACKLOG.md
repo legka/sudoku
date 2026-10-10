@@ -98,7 +98,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: `#board` is assigned `role="grid"`, but its direct children are 81 `role="gridcell"` elements. ARIA grid semantics require cells to be grouped in `role="row"` parent containers.
 - **Proposed Solution**: Wrap every 9 cells in a row container with `role="row"`, or adjust ARIA attributes to conform to the WAI-ARIA Grid pattern.
 
-### [A11Y-02] Roving tabindex and cell selection accessibility
+### ~~[A11Y-02] Roving tabindex and cell selection accessibility~~
 - **Priority**: Medium
 - **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L323-L332)
 - **Description**: Cells cannot be focused via Tab key (`tabindex` is missing), and selection changes do not reflect `aria-selected="true"`. Screen readers and assistive devices cannot navigate cells or announce the current selection.

@@ -99,6 +99,14 @@ export class App {
         root.className = 'cell';
         root.dataset.index = String(i);
         root.setAttribute('role', 'gridcell');
+        root.tabIndex = i === 0 ? 0 : -1;
+        root.setAttribute('aria-selected', 'false');
+        root.addEventListener('focus', () => {
+          if (this.game && this.game.selected !== i) {
+            this.game.select(i);
+            this.render();
+          }
+        });
 
         const value = document.createElement('span');
         value.className = 'value';
@@ -224,8 +232,9 @@ export class App {
   private moveSelection(key: string): void {
     const g = this.game;
     if (!g) return;
+    let next: number;
     if (g.selected === null) {
-      g.select(4 * SIZE + 4);
+      next = 4 * SIZE + 4;
     } else {
       const r = rowOf(g.selected);
       const c = colOf(g.selected);
@@ -233,8 +242,10 @@ export class App {
       const dc = key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : 0;
       const nr = Math.min(SIZE - 1, Math.max(0, r + dr));
       const nc = Math.min(SIZE - 1, Math.max(0, c + dc));
-      g.select(nr * SIZE + nc);
+      next = nr * SIZE + nc;
     }
+    g.select(next);
+    this.cells[next].root.focus();
     this.render();
   }
 
@@ -374,14 +385,18 @@ export class App {
     const sel = g.selected;
     const selValue = sel === null ? 0 : g.values[sel];
     const showWrong = g.autoCheckMistakes || this.manualChecked;
+    const activeIndex = sel !== null ? sel : 0;
 
     for (let i = 0; i < CELLS; i++) {
       const view = this.cells[i];
       const v = g.values[i];
+      const isSelected = i === sel;
+      view.root.tabIndex = i === activeIndex ? 0 : -1;
+      view.root.setAttribute('aria-selected', String(isSelected));
       const cls = view.root.classList;
       cls.toggle('given', g.isGiven(i));
       cls.toggle('wrong', showWrong && g.isWrong(i));
-      cls.toggle('selected', i === sel);
+      cls.toggle('selected', isSelected);
       cls.toggle('peer', sel !== null && i !== sel && this.related(i, sel));
       cls.toggle('same', selValue !== 0 && v === selValue && i !== sel);
 
