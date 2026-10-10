@@ -248,6 +248,7 @@ select {
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: manipulation;
 }
 
 .board.busy {
@@ -266,6 +267,7 @@ select {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   transition: background-color 80ms linear;
+  touch-action: manipulation;
 }
 
 .cell.edge-right {

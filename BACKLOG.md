@@ -108,7 +108,7 @@ Action items and improvements identified during codebase review, grouped by cate
 
 ## 4. Performance & Smoothness Optimizations
 
-### [PERF-01] Eliminate mobile tap delay on board cells with `touch-action`
+### ~~[PERF-01] Eliminate mobile tap delay on board cells with `touch-action`~~
 - **Priority**: High
 - **Files**: [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L92-L96), [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L229-L241)
 - **Description**: `touch-action: manipulation` is set on `button, select` but omitted from `.board` and `.cell`. On mobile webviews and mobile browsers (iOS Safari, Android Chrome), tapping board cells can incur up to a 300ms double-tap zoom delay before `click` fires.
