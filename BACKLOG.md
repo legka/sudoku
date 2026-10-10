@@ -1,0 +1,87 @@
+# Sudoku Backlog
+
+Action items and improvements identified during codebase review, grouped by category and prioritized.
+
+---
+
+## 1. Bugs & Functional Defects
+
+### [BUG-01] Generation error message swallowed immediately
+- **Priority**: High
+- **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L222-L231)
+- **Description**: In `App.newGame()`, the `catch` block unhides the loading message to display `"Could not create a puzzle. Please try again."`, but the `finally` block immediately calls `setBusy(false)`, which unconditionally resets `this.ui.loading.hidden = true;`. The error message is therefore never visible to the user.
+- **Proposed Solution**: Separate busy state from error state, or avoid hiding `#loading` when an error has occurred.
+
+### [BUG-02] `hint()` does not clear peer pencil notes
+- **Priority**: High
+- **Files**: [`src/core/game.ts`](file:///home/oleg/work/sudoku/src/core/game.ts#L102-L116)
+- **Description**: While `Game.inputDigit()` automatically removes pencil notes for the placed digit across peer cells (`for (const j of PEERS[i]) this.notes[j] &= ~bit(d);`), `Game.hint()` only clears notes on the hinted cell itself. Outstanding pencil marks for that digit remain in the same row, column, and box.
+- **Proposed Solution**: Replicate peer note clearance in `Game.hint()` after placing the hint digit.
+
+### [BUG-03] Note auto-clearing ignores non-orthogonal Killer cage peers
+- **Priority**: High
+- **Files**: [`src/core/game.ts`](file:///home/oleg/work/sudoku/src/core/game.ts#L80-L84)
+- **Description**: Killer Sudoku rules forbid duplicate digits within a cage. In `Game.inputDigit()`, notes are only cleared for classic `PEERS[i]` (row, col, box). If an L-shaped or multi-cell cage spans across box boundaries, cage cells that do not share a row, column, or box retain obsolete notes.
+- **Proposed Solution**: Pass cage membership information or resolve cage peers in `Game` so all cells sharing a cage with `i` have the placed digit cleared from their notes.
+
+### [BUG-04] Worker job backlog on rapid "New Game" triggers
+- **Priority**: Medium
+- **Files**: [`src/ui/puzzle-client.ts`](file:///home/oleg/work/sudoku/src/ui/puzzle-client.ts#L41-L50), [`src/ui/generator.worker.ts`](file:///home/oleg/work/sudoku/src/ui/generator.worker.ts)
+- **Description**: `requestPuzzle()` sends requests to a single shared Web Worker. If a user triggers a new game while Killer generation is running, the new job queues behind the existing 1.5s generation. Even though the app discards stale results via `id !== this.requestId`, the user suffers the cumulative wait time.
+- **Proposed Solution**: Terminate and restart the worker on new requests, or implement a cancellation/abort mechanism so obsolete generation jobs abort immediately.
+
+---
+
+## 2. UX & Game Mechanics Improvements
+
+### [UX-01] Accidental game reset on Mode / Difficulty change
+- **Priority**: Medium
+- **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L126-L127)
+- **Description**: `change` events on the `#mode` and `#difficulty` `<select>` elements immediately trigger `newGame()`. On mobile touch devices, scrolling or accidental taps destroy the current game without warning or confirmation.
+- **Proposed Solution**: Only apply mode/difficulty selections when the user explicitly clicks the "New game" button, or prompt for confirmation if moves have already been made.
+
+### [UX-02] Optional / configurable instant mistake detection
+- **Priority**: Medium
+- **Files**: [`src/core/game.ts`](file:///home/oleg/work/sudoku/src/core/game.ts#L50-L52), [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L328)
+- **Description**: `Game.isWrong()` checks input directly against `puzzle.solution[i]`, turning wrong cells red and incrementing mistakes instantly. In Killer Sudoku, this spoils trial deductions that may locally sum correctly.
+- **Proposed Solution**: Add a setting or toggle for "Check mistakes automatically" vs. manual "Check board" validation.
+
+### [UX-03] Persist undo stack across page reloads
+- **Priority**: Low
+- **Files**: [`src/core/game.ts`](file:///home/oleg/work/sudoku/src/core/game.ts#L143-L154), [`src/ui/storage.ts`](file:///home/oleg/work/sudoku/src/ui/storage.ts#L6-L20)
+- **Description**: `Game.toJSON()` serializes values and notes but omits `undoStack`. Refreshing the browser preserves board numbers but resets the undo history.
+- **Proposed Solution**: Include `undoStack?: Snapshot[]` in `GameSnapshot` so players can continue undoing previous moves after a reload.
+
+### [UX-04] Handling completed game reload
+- **Priority**: Low
+- **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L66-L72), [`src/ui/storage.ts`](file:///home/oleg/work/sudoku/src/ui/storage.ts)
+- **Description**: Reloading the page after completing a puzzle reloads the frozen, finished board without opening the win dialog or prompting for a new game.
+- **Proposed Solution**: Either clear snapshot from `localStorage` upon victory or detect `saved.finished` on load to present a "Start New Game" prompt.
+
+### [UX-05] User theme toggle switch
+- **Priority**: Low
+- **Files**: [`index.html`](file:///home/oleg/work/sudoku/index.html), [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L26-L71), [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts)
+- **Description**: CSS supports light and dark modes via `:root[data-theme='light']` and `:root[data-theme='dark']`, but there is no UI control or persistence to manually toggle themes independently of `prefers-color-scheme`.
+- **Proposed Solution**: Add a theme switcher icon/button in the topbar and persist the selection in `localStorage`.
+
+### [UX-06] Mobile landscape layout responsiveness
+- **Priority**: Low
+- **Files**: [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L98-L106)
+- **Description**: On phones in landscape orientation (viewport height < 450px), the vertical flex column overflows and requires scrolling between the board and number pad.
+- **Proposed Solution**: Add landscape media queries placing the board and controls side by side.
+
+---
+
+## 3. Accessibility (a11y) & Standards
+
+### [A11Y-01] Valid ARIA grid hierarchy
+- **Priority**: Medium
+- **Files**: [`index.html`](file:///home/oleg/work/sudoku/index.html#L45), [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L76-L98)
+- **Description**: `#board` is assigned `role="grid"`, but its direct children are 81 `role="gridcell"` elements. ARIA grid semantics require cells to be grouped in `role="row"` parent containers.
+- **Proposed Solution**: Wrap every 9 cells in a row container with `role="row"`, or adjust ARIA attributes to conform to the WAI-ARIA Grid pattern.
+
+### [A11Y-02] Roving tabindex and cell selection accessibility
+- **Priority**: Medium
+- **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L323-L332)
+- **Description**: Cells cannot be focused via Tab key (`tabindex` is missing), and selection changes do not reflect `aria-selected="true"`. Screen readers and assistive devices cannot navigate cells or announce the current selection.
+- **Proposed Solution**: Add roving `tabindex="0"` on the selected cell (`-1` on all others), set `aria-selected`, and update focus as the player moves with arrow keys.
