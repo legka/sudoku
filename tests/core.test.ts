@@ -188,4 +188,29 @@ describe('Game', () => {
     expect(g.values[i]).toBe(correct);
     expect(g.notes[peerIndex] & (1 << correct)).toBe(0);
   });
+
+  it('clears notes in same cage even if not row/col/box peers', () => {
+    // Cell 0 (r0 c0) and Cell 30 (r3 c3) do not share row, column, or 3x3 box
+    expect(PEERS[0].includes(30)).toBe(false);
+    const p: Puzzle = {
+      mode: 'killer',
+      difficulty: 'easy',
+      givens: new Array<number>(CELLS).fill(0),
+      solution: new Array<number>(CELLS).fill(1),
+      cages: [{ cells: [0, 30], sum: 10 }],
+    };
+    p.solution[0] = 4;
+    p.solution[30] = 6;
+
+    const g = new Game(p);
+    // Add note 4 in cell 30
+    g.select(30);
+    g.inputDigit(4, true);
+    expect(g.notes[30] & (1 << 4)).toBeTruthy();
+
+    // Place digit 4 in cell 0
+    g.select(0);
+    g.inputDigit(4, false);
+    expect(g.notes[30] & (1 << 4)).toBe(0);
+  });
 });

@@ -18,7 +18,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: While `Game.inputDigit()` automatically removes pencil notes for the placed digit across peer cells (`for (const j of PEERS[i]) this.notes[j] &= ~bit(d);`), `Game.hint()` only clears notes on the hinted cell itself. Outstanding pencil marks for that digit remain in the same row, column, and box.
 - **Proposed Solution**: Replicate peer note clearance in `Game.hint()` after placing the hint digit.
 
-### [BUG-03] Note auto-clearing ignores non-orthogonal Killer cage peers
+### ~~[BUG-03] Note auto-clearing ignores non-orthogonal Killer cage peers~~
 - **Priority**: High
 - **Files**: [`src/core/game.ts`](file:///home/oleg/work/sudoku/src/core/game.ts#L80-L84)
 - **Description**: Killer Sudoku rules forbid duplicate digits within a cage. In `Game.inputDigit()`, notes are only cleared for classic `PEERS[i]` (row, col, box). If an L-shaped or multi-cell cage spans across box boundaries, cage cells that do not share a row, column, or box retain obsolete notes.

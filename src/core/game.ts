@@ -30,6 +30,7 @@ export class Game {
   finished = false;
 
   private undoStack: Snapshot[] = [];
+  private cagePeers: number[][];
 
   constructor(puzzle: Puzzle, state?: Partial<GameSnapshot>) {
     this.puzzle = puzzle;
@@ -40,6 +41,23 @@ export class Game {
     this.hints = state?.hints ?? 0;
     this.elapsedSeconds = state?.elapsedSeconds ?? 0;
     this.finished = state?.finished ?? false;
+
+    this.cagePeers = Array.from({ length: CELLS }, () => []);
+    for (const cage of puzzle.cages ?? []) {
+      for (const cell of cage.cells) {
+        for (const peer of cage.cells) {
+          if (peer !== cell) {
+            this.cagePeers[cell].push(peer);
+          }
+        }
+      }
+    }
+  }
+
+  private clearPeerNotes(i: number, d: number): void {
+    const mask = ~bit(d);
+    for (const j of PEERS[i]) this.notes[j] &= mask;
+    for (const j of this.cagePeers[i]) this.notes[j] &= mask;
   }
 
   isGiven(i: number): boolean {
@@ -79,8 +97,7 @@ export class Game {
     this.commit(() => {
       this.values[i] = d;
       this.notes[i] = 0;
-      // A placed digit no longer needs to be noted in the same row, column or box.
-      for (const j of PEERS[i]) this.notes[j] &= ~bit(d);
+      this.clearPeerNotes(i, d);
     });
     if (d !== this.puzzle.solution[i]) this.mistakes++;
     this.checkFinished();
@@ -110,7 +127,7 @@ export class Game {
     this.commit(() => {
       this.values[i] = d;
       this.notes[i] = 0;
-      for (const j of PEERS[i]) this.notes[j] &= ~bit(d);
+      this.clearPeerNotes(i, d);
     });
     this.hints++;
     this.checkFinished();
