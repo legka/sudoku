@@ -52,7 +52,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: `Game.isWrong()` checks input directly against `puzzle.solution[i]`, turning wrong cells red and incrementing mistakes instantly. In Killer Sudoku, this spoils trial deductions that may locally sum correctly.
 - **Proposed Solution**: Add a setting or toggle for "Check mistakes automatically" vs. manual "Check board" validation.
 
-### [UX-03] Persist undo stack across page reloads
+### ~~[UX-03] Persist undo stack across page reloads~~
 - **Priority**: Low
 - **Files**: [`src/core/game.ts`](file:///home/oleg/work/sudoku/src/core/game.ts#L143-L154), [`src/ui/storage.ts`](file:///home/oleg/work/sudoku/src/ui/storage.ts#L6-L20)
 - **Description**: `Game.toJSON()` serializes values and notes but omits `undoStack`. Refreshing the browser preserves board numbers but resets the undo history.

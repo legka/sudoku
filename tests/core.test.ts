@@ -160,13 +160,17 @@ describe('Game', () => {
     expect(g.mistakes).toBe(0);
   });
 
-  it('restores from a saved snapshot', () => {
+  it('restores from a saved snapshot including undo history', () => {
     const g = new Game(puzzle());
+    const initialValues = g.values.slice();
     g.select(0);
     g.hint();
     const restored = new Game(puzzle(), JSON.parse(JSON.stringify(g.toJSON())));
     expect(restored.values).toEqual(g.values);
     expect(restored.hints).toBe(1);
+    expect(restored.canUndo).toBe(true);
+    restored.undo();
+    expect(restored.values).toEqual(initialValues);
   });
 
   it('clears peer notes when using hint', () => {

@@ -15,6 +15,7 @@ export interface GameSnapshot extends Snapshot {
   elapsedSeconds: number;
   finished: boolean;
   autoCheckMistakes?: boolean;
+  undoStack?: Snapshot[];
 }
 
 const UNDO_LIMIT = 500;
@@ -44,6 +45,11 @@ export class Game {
     this.elapsedSeconds = state?.elapsedSeconds ?? 0;
     this.finished = state?.finished ?? false;
     this.autoCheckMistakes = state?.autoCheckMistakes ?? true;
+    this.undoStack =
+      state?.undoStack?.map((s) => ({
+        values: s.values.slice(),
+        notes: s.notes.slice(),
+      })) ?? [];
 
     this.cagePeers = Array.from({ length: CELLS }, () => []);
     for (const cage of puzzle.cages ?? []) {
@@ -182,6 +188,7 @@ export class Game {
       elapsedSeconds: this.elapsedSeconds,
       finished: this.finished,
       autoCheckMistakes: this.autoCheckMistakes,
+      undoStack: this.undoStack.map((s) => ({ values: s.values.slice(), notes: s.notes.slice() })),
     };
   }
 }

@@ -15,7 +15,8 @@ function isSnapshot(value: unknown): value is GameSnapshot {
     Array.isArray(s.values) &&
     s.values.length === CELLS &&
     Array.isArray(s.notes) &&
-    s.notes.length === CELLS
+    s.notes.length === CELLS &&
+    (s.undoStack === undefined || Array.isArray(s.undoStack))
   );
 }
 
