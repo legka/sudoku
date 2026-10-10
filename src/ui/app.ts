@@ -294,6 +294,7 @@ export class App {
     this.busy = busy;
     this.ui.board.setAttribute('aria-busy', String(busy));
     this.ui.board.classList.toggle('busy', busy);
+    this.ui.loading.classList.toggle('is-busy', busy);
     if (busy) {
       this.ui.loading.textContent = 'Creating puzzle…';
       this.ui.loading.hidden = false;

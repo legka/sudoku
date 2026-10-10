@@ -120,7 +120,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: On every move or selection shift, `render()` unconditionally assigns `.textContent` across all 81 cell values and 729 note spans (810 total DOM writes). In browser engine benchmarks, guarding assignments with `if (node.textContent !== next) node.textContent = next;` reduces render cost from 0.59ms to 0.05ms (11x speedup), eliminating frame drops during rapid arrow-key navigation.
 - **Proposed Solution**: Guard `value.textContent` and `notes[d-1].textContent` assignments so only changed text nodes are touched.
 
-### [PERF-03] Animated loading state during Killer generation
+### ~~[PERF-03] Animated loading state during Killer generation~~
 - **Priority**: Low
 - **Files**: [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L334-L347), [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L233-L243)
 - **Description**: Killer generation runs for ~1.5s in the worker. While generating, the previous board remains visible at 50% opacity with static text `"Creating puzzle…"`. Without a CSS spinner or pulse animation, the page appears frozen rather than active.
