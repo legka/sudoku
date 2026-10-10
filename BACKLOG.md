@@ -82,7 +82,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: While buttons have an active press state (`transform: translateY(1px)`), `.cell` lacks any `:active` styling. On touchscreens, there is zero immediate visual feedback when the player touches a cell until the full touch sequence completes and fires `click`.
 - **Proposed Solution**: Add a subtle `:active` highlight (e.g. `background: var(--cell-selected)`) on `.cell:active` for instant tactile response.
 
-### [UX-08] Support horizontal safe-area insets for notched devices in landscape
+### ~~[UX-08] Support horizontal safe-area insets for notched devices in landscape~~
 - **Priority**: Low
 - **Files**: [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L98-L106)
 - **Description**: `.app` padding incorporates top and bottom safe-area insets (`env(safe-area-inset-top)` / `bottom`) but fixes horizontal padding at 16px. On devices with camera cutouts or Dynamic Island held in landscape, edge elements sit flush against the display cutout.
