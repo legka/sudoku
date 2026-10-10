@@ -126,7 +126,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: Killer generation runs for ~1.5s in the worker. While generating, the previous board remains visible at 50% opacity with static text `"Creating puzzle…"`. Without a CSS spinner or pulse animation, the page appears frozen rather than active.
 - **Proposed Solution**: Add a lightweight CSS spinner or pulsing skeleton state to `.loading`.
 
-### [PERF-04] Precompute min/max sum bounds in `fitsCage()`
+### ~~[PERF-04] Precompute min/max sum bounds in `fitsCage()`~~
 - **Priority**: Low
 - **Files**: [`src/core/solver.ts`](file:///home/oleg/work/sudoku/src/core/solver.ts#L110-L126)
 - **Description**: In `fitsCage()`, candidate checking runs two loops (1 to 9 and 9 down to 1) for every digit to compute the lowest and highest sum achievable with remaining digits. During 2,000 merge attempts in Killer generation, this is called tens of thousands of times.

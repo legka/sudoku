@@ -92,6 +92,37 @@ function unplace(ctx: Context, i: number, d: number): void {
   }
 }
 
+const MIN_SUM = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45];
+const MAX_SUM = [0, 9, 17, 24, 30, 35, 39, 42, 44, 45];
+
+const MIN_BOUNDS = new Int16Array(10 * 1024);
+const MAX_BOUNDS = new Int16Array(10 * 1024);
+
+for (let k = 1; k <= SIZE; k++) {
+  for (let mask = 0; mask < 1024; mask++) {
+    const idx = (k << 10) | mask;
+    let low = 0;
+    let takenLow = 0;
+    for (let x = 1; x <= SIZE && takenLow < k; x++) {
+      if (!(mask & bit(x))) {
+        low += x;
+        takenLow++;
+      }
+    }
+    MIN_BOUNDS[idx] = takenLow === k ? low : 999;
+
+    let high = 0;
+    let takenHigh = 0;
+    for (let x = SIZE; x >= 1 && takenHigh < k; x--) {
+      if (!(mask & bit(x))) {
+        high += x;
+        takenHigh++;
+      }
+    }
+    MAX_BOUNDS[idx] = takenHigh === k ? high : -1;
+  }
+}
+
 /**
  * Whether digit d can still go into the cage of cell i: it must be new to the
  * cage, and the cells still empty must be able to make up the remaining sum
@@ -106,24 +137,11 @@ function fitsCage(ctx: Context, c: number, d: number): boolean {
   if (remaining === 0) return sum === cage.sum;
 
   const need = cage.sum - sum;
+  if (need < MIN_SUM[remaining] || need > MAX_SUM[remaining]) return false;
+
   const used = ctx.cageMask[c] | bit(d);
-  let low = 0;
-  let high = 0;
-  let taken = 0;
-  for (let x = 1; x <= SIZE && taken < remaining; x++) {
-    if (!(used & bit(x))) {
-      low += x;
-      taken++;
-    }
-  }
-  taken = 0;
-  for (let x = SIZE; x >= 1 && taken < remaining; x--) {
-    if (!(used & bit(x))) {
-      high += x;
-      taken++;
-    }
-  }
-  return need >= low && need <= high;
+  const idx = (remaining << 10) | used;
+  return need >= MIN_BOUNDS[idx] && need <= MAX_BOUNDS[idx];
 }
 
 function candidates(ctx: Context, i: number): number {
