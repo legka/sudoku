@@ -92,7 +92,7 @@ Action items and improvements identified during codebase review, grouped by cate
 
 ## 3. Accessibility (a11y) & Standards
 
-### [A11Y-01] Valid ARIA grid hierarchy
+### ~~[A11Y-01] Valid ARIA grid hierarchy~~
 - **Priority**: Medium
 - **Files**: [`index.html`](file:///home/oleg/work/sudoku/index.html#L45), [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L76-L98)
 - **Description**: `#board` is assigned `role="grid"`, but its direct children are 81 `role="gridcell"` elements. ARIA grid semantics require cells to be grouped in `role="row"` parent containers.

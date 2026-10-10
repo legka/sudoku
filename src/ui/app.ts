@@ -88,27 +88,35 @@ export class App {
   // ---- construction -------------------------------------------------------
 
   private buildBoard(): void {
-    for (let i = 0; i < CELLS; i++) {
-      const root = document.createElement('div');
-      root.className = 'cell';
-      root.dataset.index = String(i);
-      root.setAttribute('role', 'gridcell');
+    for (let r = 0; r < SIZE; r++) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.setAttribute('role', 'row');
 
-      const value = document.createElement('span');
-      value.className = 'value';
+      for (let c = 0; c < SIZE; c++) {
+        const i = r * SIZE + c;
+        const root = document.createElement('div');
+        root.className = 'cell';
+        root.dataset.index = String(i);
+        root.setAttribute('role', 'gridcell');
 
-      const notesEl = document.createElement('div');
-      notesEl.className = 'notes';
-      const notes: HTMLSpanElement[] = [];
-      for (let d = 1; d <= SIZE; d++) {
-        const note = document.createElement('span');
-        notesEl.appendChild(note);
-        notes.push(note);
+        const value = document.createElement('span');
+        value.className = 'value';
+
+        const notesEl = document.createElement('div');
+        notesEl.className = 'notes';
+        const notes: HTMLSpanElement[] = [];
+        for (let d = 1; d <= SIZE; d++) {
+          const note = document.createElement('span');
+          notesEl.appendChild(note);
+          notes.push(note);
+        }
+
+        root.append(notesEl, value);
+        row.appendChild(root);
+        this.cells.push({ root, value, notes });
       }
-
-      root.append(notesEl, value);
-      this.ui.board.appendChild(root);
-      this.cells.push({ root, value, notes });
+      this.ui.board.appendChild(row);
     }
   }
 

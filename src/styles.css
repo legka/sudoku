@@ -276,12 +276,18 @@ select {
   border-bottom: 2px solid var(--line-strong);
 }
 
+.row {
+  display: contents;
+}
+
 /* The last column and row sit on the board border. */
-.cell:nth-child(9n) {
+.cell:nth-child(9n),
+.row .cell:last-child {
   border-right: none;
 }
 
-.cell:nth-child(n + 73) {
+.cell:nth-child(n + 73),
+.row:last-child .cell {
   border-bottom: none;
 }
 
