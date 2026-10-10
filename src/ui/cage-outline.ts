@@ -69,11 +69,10 @@ export function cageOutlinePath(cells: readonly number[], inset = 0.08): string 
   return parts.join(' ');
 }
 
-/** Position for a cage's sum label: just inside the top-left cell of the cage. */
+/** Position for a cage's sum label: tucked into the top-left corner of the cage. */
 export function cageLabelPosition(cells: readonly number[]): Point {
   const first = Math.min(...cells);
-  // Clear of the outline, which sits 0.08 cells in from the cell edge.
-  return [colOf(first) + 0.14, rowOf(first) + 0.12];
+  return [round(colOf(first) + 0.05), round(rowOf(first) + 0.03)];
 }
 
-const round = (n: number): number => Math.round(n * 1000) / 1000;
+export const round = (n: number): number => Math.round(n * 1000) / 1000;

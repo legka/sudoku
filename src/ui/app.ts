@@ -1,7 +1,7 @@
 import { Game } from '../core/game';
 import { bit, boxOf, cageIndexOf, colOf, rowOf } from '../core/rules';
 import { CELLS, Difficulty, Mode, SIZE } from '../core/types';
-import { cageLabelPosition, cageOutlinePath } from './cage-outline';
+import { cageLabelPosition, cageOutlinePath, round } from './cage-outline';
 import { requestPuzzle } from './puzzle-client';
 import { loadSnapshot, saveSnapshot } from './storage';
 
@@ -344,7 +344,7 @@ export class App {
 
     for (let i = 0; i < CELLS; i++) {
       const classes = this.cells[i].root.classList;
-      classes.remove('edge-right', 'edge-bottom', 'has-cage-sum');
+      classes.remove('edge-right', 'edge-bottom');
       if (colOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + 1)) classes.add('edge-right');
       if (rowOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + SIZE)) classes.add('edge-bottom');
     }
@@ -357,14 +357,42 @@ export class App {
     svg.setAttribute('class', 'cage-layer');
     svg.setAttribute('viewBox', `0 0 ${SIZE} ${SIZE}`);
     svg.setAttribute('aria-hidden', 'true');
+
+    const defs = document.createElementNS(SVG_NS, 'defs');
+    const mask = document.createElementNS(SVG_NS, 'mask');
+    mask.setAttribute('id', 'cage-outline-mask');
+
+    const maskBg = document.createElementNS(SVG_NS, 'rect');
+    maskBg.setAttribute('x', '0');
+    maskBg.setAttribute('y', '0');
+    maskBg.setAttribute('width', String(SIZE));
+    maskBg.setAttribute('height', String(SIZE));
+    maskBg.setAttribute('fill', 'white');
+    mask.appendChild(maskBg);
+
+    const outlinesGroup = document.createElementNS(SVG_NS, 'g');
+    outlinesGroup.setAttribute('mask', 'url(#cage-outline-mask)');
+
     for (const cage of puzzle.cages) {
       const first = Math.min(...cage.cells);
-      this.cells[first]?.root.classList.add('has-cage-sum');
+      const c = colOf(first);
+      const r = rowOf(first);
+      const digits = String(cage.sum).length;
+      const maskW = digits === 1 ? 0.20 : 0.35;
+      const maskH = 0.20;
+
+      const maskCut = document.createElementNS(SVG_NS, 'rect');
+      maskCut.setAttribute('x', String(round(c + 0.03)));
+      maskCut.setAttribute('y', String(round(r + 0.02)));
+      maskCut.setAttribute('width', String(maskW));
+      maskCut.setAttribute('height', String(maskH));
+      maskCut.setAttribute('fill', 'black');
+      mask.appendChild(maskCut);
 
       const outline = document.createElementNS(SVG_NS, 'path');
       outline.setAttribute('class', 'cage-outline');
       outline.setAttribute('d', cageOutlinePath(cage.cells));
-      svg.appendChild(outline);
+      outlinesGroup.appendChild(outline);
 
       const [x, y] = cageLabelPosition(cage.cells);
       const label = document.createElementNS(SVG_NS, 'text');
@@ -374,6 +402,11 @@ export class App {
       label.textContent = String(cage.sum);
       svg.appendChild(label);
     }
+
+    defs.appendChild(mask);
+    svg.insertBefore(outlinesGroup, svg.firstChild);
+    svg.insertBefore(defs, svg.firstChild);
+
     // Insert inside the board frame, above the cells.
     this.ui.board.insertAdjacentElement('afterend', svg);
     this.cageLayer = svg;

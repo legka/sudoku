@@ -333,7 +333,7 @@ select {
 
 .notes {
   position: absolute;
-  inset: 4% 6%;
+  inset: 11% 10% 11% 10%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -344,19 +344,10 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.3cqw;
+  font-size: 2.1cqw;
   line-height: 1;
   color: var(--muted);
 }
-
-.cell.has-cage-sum .notes {
-  inset: 30% 4% 2% 4%;
-}
-
-.cell.has-cage-sum .notes span {
-  font-size: 2cqw;
-}
-
 
 /* Killer cage outlines and sums, drawn over the board in cell units. */
 .cage-layer {
@@ -376,13 +367,9 @@ select {
 }
 
 .cage-sum {
-  font-size: 0.22px;
+  font-size: 0.15px;
   font-weight: 700;
   fill: var(--cage-ink);
-  /* A halo in the cell colour breaks the dashed outline around the sum. */
-  stroke: var(--cell);
-  stroke-width: 0.07;
-  paint-order: stroke;
   dominant-baseline: hanging;
 }
 
