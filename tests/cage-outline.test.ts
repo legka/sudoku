@@ -51,6 +51,6 @@ describe('cageOutlinePath', () => {
   });
 
   it('places the sum label in the top-left cell of the cage', () => {
-    expect(cageLabelPosition([9, 10, 18])).toEqual([0.05, 1.03]);
+    expect(cageLabelPosition([9, 10, 18])).toEqual([0.08, 1.08]);
   });
 });

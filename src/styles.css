@@ -333,7 +333,7 @@ select {
 
 .notes {
   position: absolute;
-  inset: 11% 10% 11% 10%;
+  inset: 17% 9% 7% 9%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -344,7 +344,7 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.1cqw;
+  font-size: 2cqw;
   line-height: 1;
   color: var(--muted);
 }
@@ -367,7 +367,7 @@ select {
 }
 
 .cage-sum {
-  font-size: 0.15px;
+  font-size: 0.17px;
   font-weight: 700;
   fill: var(--cage-ink);
   dominant-baseline: hanging;

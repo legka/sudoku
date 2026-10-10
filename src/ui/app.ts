@@ -378,12 +378,12 @@ export class App {
       const c = colOf(first);
       const r = rowOf(first);
       const digits = String(cage.sum).length;
-      const maskW = digits === 1 ? 0.20 : 0.35;
-      const maskH = 0.20;
+      const maskW = digits === 1 ? 0.17 : 0.32;
+      const maskH = 0.16;
 
       const maskCut = document.createElementNS(SVG_NS, 'rect');
-      maskCut.setAttribute('x', String(round(c + 0.03)));
-      maskCut.setAttribute('y', String(round(r + 0.02)));
+      maskCut.setAttribute('x', String(round(c + 0.06)));
+      maskCut.setAttribute('y', String(round(r + 0.06)));
       maskCut.setAttribute('width', String(maskW));
       maskCut.setAttribute('height', String(maskH));
       maskCut.setAttribute('fill', 'black');
