@@ -209,6 +209,11 @@ export class App {
       this.toggleNotes();
     } else if (key === 'h' || key === 'H') {
       this.afterChange(this.game.hint());
+    } else if (key === 'c' || key === 'C') {
+      this.manualChecked = true;
+      this.render();
+    } else if (key === 'u' || key === 'U') {
+      this.afterChange(this.game.undo());
     } else if (key.startsWith('Arrow')) {
       this.moveSelection(key);
     } else {

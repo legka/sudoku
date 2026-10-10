@@ -52,17 +52,32 @@
       </main>
 
       <nav class="actions" aria-label="Actions">
-        <button id="undo" class="btn" type="button" disabled>Undo</button>
-        <button id="erase" class="btn" type="button">Erase</button>
-        <button id="notes" class="btn" type="button" aria-pressed="false">Notes</button>
-        <button id="hint" class="btn" type="button">Hint</button>
-        <button id="check" class="btn" type="button">Check</button>
+        <button id="undo" class="btn" type="button" aria-keyshortcuts="Control+z" disabled>
+          <span>Undo</span>
+          <span class="shortcut">Ctrl+Z</span>
+        </button>
+        <button id="erase" class="btn" type="button" aria-keyshortcuts="Delete Backspace">
+          <span>Erase</span>
+          <span class="shortcut">Del</span>
+        </button>
+        <button id="notes" class="btn" type="button" aria-keyshortcuts="n" aria-pressed="false">
+          <span>Notes</span>
+          <span class="shortcut">N</span>
+        </button>
+        <button id="hint" class="btn" type="button" aria-keyshortcuts="h">
+          <span>Hint</span>
+          <span class="shortcut">H</span>
+        </button>
+        <button id="check" class="btn" type="button" aria-keyshortcuts="c">
+          <span>Check</span>
+          <span class="shortcut">C</span>
+        </button>
       </nav>
 
       <div id="pad" class="pad" aria-label="Number pad"></div>
 
       <p class="help">
-        Tap a cell, then a number. Notes mode adds pencil marks. Keyboard: 1–9, Backspace, N, H, Ctrl+Z.
+        Tap a cell, then a number. Notes mode adds pencil marks. Keyboard: 1–9, Backspace, N, H, C, Ctrl+Z.
       </p>
     </div>
 
