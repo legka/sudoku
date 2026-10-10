@@ -1,6 +1,7 @@
 import { Game } from '../core/game';
 import { bit, boxOf, cageIndexOf, colOf, rowOf } from '../core/rules';
 import { CELLS, Difficulty, Mode, SIZE } from '../core/types';
+import { cageLabelPosition, cageOutlinePath } from './cage-outline';
 import { requestPuzzle } from './puzzle-client';
 import { loadSnapshot, saveSnapshot } from './storage';
 
@@ -10,6 +11,8 @@ interface CellView {
   /** Pencil marks for digits 1..9. */
   notes: HTMLSpanElement[];
 }
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 function byId<T extends HTMLElement>(id: string): T {
   const el = document.getElementById(id);
@@ -32,7 +35,8 @@ export class App {
   private ticks = 0;
   private cells: CellView[] = [];
   private cageOf: number[] = new Array<number>(CELLS).fill(-1);
-  private cageLabels: HTMLSpanElement[] = [];
+  /** SVG layer with cage outlines and sums; absent for classic puzzles. */
+  private cageLayer: SVGSVGElement | null = null;
 
   private readonly ui = {
     board: byId<HTMLDivElement>('board'),
@@ -88,10 +92,7 @@ export class App {
         notes.push(note);
       }
 
-      const frame = document.createElement('span');
-      frame.className = 'frame';
-
-      root.append(notesEl, value, frame);
+      root.append(notesEl, value);
       this.ui.board.appendChild(root);
       this.cells.push({ root, value, notes });
     }
@@ -273,40 +274,43 @@ export class App {
 
   // ---- rendering ----------------------------------------------------------
 
-  /**
-   * Sets box borders and cage outlines, and places cage sum labels.
-   * Runs once per puzzle.
-   */
+  /** Sets box borders, and draws cage outlines and sums. Runs once per puzzle. */
   private layoutPuzzle(): void {
     const puzzle = this.game!.puzzle;
     this.cageOf = cageIndexOf(puzzle.cages);
 
-    for (const label of this.cageLabels) label.remove();
-    this.cageLabels = [];
-
-    const cellClasses = ['edge-right', 'edge-bottom', 'cage-top', 'cage-right', 'cage-bottom', 'cage-left'];
     for (let i = 0; i < CELLS; i++) {
       const classes = this.cells[i].root.classList;
-      classes.remove(...cellClasses);
+      classes.remove('edge-right', 'edge-bottom');
       if (colOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + 1)) classes.add('edge-right');
       if (rowOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + SIZE)) classes.add('edge-bottom');
-
-      const cage = this.cageOf[i];
-      if (cage < 0) continue;
-      // Outline every side that faces another cage or the board edge.
-      if (rowOf(i) === 0 || this.cageOf[i - SIZE] !== cage) classes.add('cage-top');
-      if (colOf(i) === SIZE - 1 || this.cageOf[i + 1] !== cage) classes.add('cage-right');
-      if (rowOf(i) === SIZE - 1 || this.cageOf[i + SIZE] !== cage) classes.add('cage-bottom');
-      if (colOf(i) === 0 || this.cageOf[i - 1] !== cage) classes.add('cage-left');
     }
 
+    this.cageLayer?.remove();
+    this.cageLayer = null;
+    if (puzzle.cages.length === 0) return;
+
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('class', 'cage-layer');
+    svg.setAttribute('viewBox', `0 0 ${SIZE} ${SIZE}`);
+    svg.setAttribute('aria-hidden', 'true');
     for (const cage of puzzle.cages) {
-      const label = document.createElement('span');
-      label.className = 'cage-sum';
+      const outline = document.createElementNS(SVG_NS, 'path');
+      outline.setAttribute('class', 'cage-outline');
+      outline.setAttribute('d', cageOutlinePath(cage.cells));
+      svg.appendChild(outline);
+
+      const [x, y] = cageLabelPosition(cage.cells);
+      const label = document.createElementNS(SVG_NS, 'text');
+      label.setAttribute('class', 'cage-sum');
+      label.setAttribute('x', String(x));
+      label.setAttribute('y', String(y));
       label.textContent = String(cage.sum);
-      this.cells[Math.min(...cage.cells)].root.appendChild(label);
-      this.cageLabels.push(label);
+      svg.appendChild(label);
     }
+    // Insert inside the board frame, above the cells.
+    this.ui.board.insertAdjacentElement('afterend', svg);
+    this.cageLayer = svg;
   }
 
   private render(): void {

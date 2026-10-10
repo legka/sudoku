@@ -12,6 +12,7 @@
   --line: #c9ccd3;
   --line-strong: #1d1f24;
   --accent: #b5562b;
+  --cage-ink: #34465e;
   --button: #ffffff;
   --button-border: #d3d6dd;
   --primary: #2456c7;
@@ -36,6 +37,7 @@
     --line: #3a3f4b;
     --line-strong: #8d94a3;
     --accent: #e08a5f;
+    --cage-ink: #aab6cc;
     --button: #242833;
     --button-border: #3a3f4b;
     --primary: #4a7be0;
@@ -59,6 +61,7 @@
   --line: #3a3f4b;
   --line-strong: #8d94a3;
   --accent: #e08a5f;
+  --cage-ink: #aab6cc;
   --button: #242833;
   --button-border: #3a3f4b;
   --primary: #4a7be0;
@@ -244,34 +247,6 @@ select {
   border-bottom: 2px solid var(--line-strong);
 }
 
-/*
- * Cage outlines: each cell draws a dashed line inset from its edges on every
- * side that faces another cage. Two neighbouring cages therefore show two
- * parallel lines, which keeps each cage's boundary distinct.
- */
-.frame {
-  position: absolute;
-  inset: 4px;
-  pointer-events: none;
-  border: 0 dashed var(--accent);
-}
-
-.cell.cage-top .frame {
-  border-top-width: 1.5px;
-}
-
-.cell.cage-right .frame {
-  border-right-width: 1.5px;
-}
-
-.cell.cage-bottom .frame {
-  border-bottom-width: 1.5px;
-}
-
-.cell.cage-left .frame {
-  border-left-width: 1.5px;
-}
-
 /* The last column and row sit on the board border. */
 .cell:nth-child(9n) {
   border-right: none;
@@ -327,18 +302,33 @@ select {
   color: var(--muted);
 }
 
-.cage-sum {
+
+/* Killer cage outlines and sums, drawn over the board in cell units. */
+.cage-layer {
   position: absolute;
-  top: 2px;
   left: 2px;
-  /* Matches the cell so the dashed outline breaks around the sum. */
-  background-color: inherit;
-  padding: 1px 2px;
-  font-size: 2.6cqw;
-  font-weight: 700;
-  color: var(--accent);
-  line-height: 1;
+  top: 2px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
   pointer-events: none;
+}
+
+.cage-outline {
+  fill: none;
+  stroke: var(--cage-ink);
+  stroke-width: 0.035;
+  stroke-dasharray: 0.1 0.07;
+}
+
+.cage-sum {
+  font-size: 0.22px;
+  font-weight: 700;
+  fill: var(--cage-ink);
+  /* A halo in the cell colour breaks the dashed outline around the sum. */
+  stroke: var(--cell);
+  stroke-width: 0.07;
+  paint-order: stroke;
+  dominant-baseline: hanging;
 }
 
 .loading {
