@@ -24,7 +24,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: Killer Sudoku rules forbid duplicate digits within a cage. In `Game.inputDigit()`, notes are only cleared for classic `PEERS[i]` (row, col, box). If an L-shaped or multi-cell cage spans across box boundaries, cage cells that do not share a row, column, or box retain obsolete notes.
 - **Proposed Solution**: Pass cage membership information or resolve cage peers in `Game` so all cells sharing a cage with `i` have the placed digit cleared from their notes.
 
-### [BUG-04] Worker job backlog on rapid "New Game" triggers
+### ~~[BUG-04] Worker job backlog on rapid "New Game" triggers~~
 - **Priority**: Medium
 - **Files**: [`src/ui/puzzle-client.ts`](file:///home/oleg/work/sudoku/src/ui/puzzle-client.ts#L41-L50), [`src/ui/generator.worker.ts`](file:///home/oleg/work/sudoku/src/ui/generator.worker.ts)
 - **Description**: `requestPuzzle()` sends requests to a single shared Web Worker. If a user triggers a new game while Killer generation is running, the new job queues behind the existing 1.5s generation. Even though the app discards stale results via `id !== this.requestId`, the user suffers the cumulative wait time.

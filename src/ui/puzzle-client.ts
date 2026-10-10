@@ -37,8 +37,23 @@ function getWorker(): Worker | null {
   return worker;
 }
 
+export function cancelPending(): void {
+  if (pending.size > 0) {
+    for (const job of pending.values()) {
+      job.reject(new Error('Superseded by a newer request'));
+    }
+    pending.clear();
+  }
+  if (worker) {
+    worker.terminate();
+    worker = null;
+  }
+}
+
 /** Generates a puzzle in a worker when possible, otherwise on the main thread. */
 export function requestPuzzle(mode: Mode, difficulty: Difficulty): Promise<Puzzle> {
+  cancelPending();
+
   const w = getWorker();
   if (!w) return Promise.resolve(generatePuzzle(mode, difficulty));
 
