@@ -12,7 +12,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: In `App.newGame()`, the `catch` block unhides the loading message to display `"Could not create a puzzle. Please try again."`, but the `finally` block immediately calls `setBusy(false)`, which unconditionally resets `this.ui.loading.hidden = true;`. The error message is therefore never visible to the user.
 - **Proposed Solution**: Separate busy state from error state, or avoid hiding `#loading` when an error has occurred.
 
-### [BUG-02] `hint()` does not clear peer pencil notes
+### ~~[BUG-02] `hint()` does not clear peer pencil notes~~
 - **Priority**: High
 - **Files**: [`src/core/game.ts`](file:///home/oleg/work/sudoku/src/core/game.ts#L102-L116)
 - **Description**: While `Game.inputDigit()` automatically removes pencil notes for the placed digit across peer cells (`for (const j of PEERS[i]) this.notes[j] &= ~bit(d);`), `Game.hint()` only clears notes on the hinted cell itself. Outstanding pencil marks for that digit remain in the same row, column, and box.

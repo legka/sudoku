@@ -106,9 +106,11 @@ export class Game {
     );
     const i = candidates[0];
     if (i === undefined) return false;
+    const d = this.puzzle.solution[i];
     this.commit(() => {
-      this.values[i] = this.puzzle.solution[i];
+      this.values[i] = d;
       this.notes[i] = 0;
+      for (const j of PEERS[i]) this.notes[j] &= ~bit(d);
     });
     this.hints++;
     this.checkFinished();

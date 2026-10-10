@@ -168,4 +168,24 @@ describe('Game', () => {
     expect(restored.values).toEqual(g.values);
     expect(restored.hints).toBe(1);
   });
+
+  it('clears peer notes when using hint', () => {
+    const p = puzzle();
+    const g = new Game(p);
+    // Find empty cell i and empty peer cell j
+    const i = p.givens.findIndex((v) => v === 0);
+    const correct = p.solution[i];
+    const peerIndex = PEERS[i].find((j) => p.givens[j] === 0)!;
+
+    // Add note for 'correct' digit in peerIndex
+    g.select(peerIndex);
+    g.inputDigit(correct, true);
+    expect(g.notes[peerIndex] & (1 << correct)).toBeTruthy();
+
+    // Use hint on cell i
+    g.select(i);
+    g.hint();
+    expect(g.values[i]).toBe(correct);
+    expect(g.notes[peerIndex] & (1 << correct)).toBe(0);
+  });
 });
