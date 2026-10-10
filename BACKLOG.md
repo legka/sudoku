@@ -30,7 +30,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: `requestPuzzle()` sends requests to a single shared Web Worker. If a user triggers a new game while Killer generation is running, the new job queues behind the existing 1.5s generation. Even though the app discards stale results via `id !== this.requestId`, the user suffers the cumulative wait time.
 - **Proposed Solution**: Terminate and restart the worker on new requests, or implement a cancellation/abort mechanism so obsolete generation jobs abort immediately.
 
-### [BUG-05] Pencil marks overlap with Killer cage sum indicators (especially digit 1)
+### ~~[BUG-05] Pencil marks overlap with Killer cage sum indicators (especially digit 1)~~
 - **Priority**: High
 - **Files**: [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L287-L333), [`src/ui/cage-outline.ts`](file:///home/oleg/work/sudoku/src/ui/cage-outline.ts#L73-L77), [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L86-L94)
 - **Description**: In Killer Sudoku, group sum labels are positioned at the top-left of the first cell in a cage (`[col + 0.14, row + 0.12]`). Pencil marks (candidate notes) are laid out in a 3×3 grid where digit `1` occupies the exact same top-left slot (`row 1, col 1`). Furthermore, the SVG `.cage-sum` element renders on top with a knockout background stroke (`stroke: var(--cell)`), colliding with and partially obscuring note `1` (and note `2` for multi-digit sums).

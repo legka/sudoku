@@ -302,6 +302,14 @@ select {
   color: var(--muted);
 }
 
+.cell.has-cage-sum .notes {
+  inset: 30% 4% 2% 4%;
+}
+
+.cell.has-cage-sum .notes span {
+  font-size: 2cqw;
+}
+
 
 /* Killer cage outlines and sums, drawn over the board in cell units. */
 .cage-layer {

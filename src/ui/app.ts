@@ -287,7 +287,7 @@ export class App {
 
     for (let i = 0; i < CELLS; i++) {
       const classes = this.cells[i].root.classList;
-      classes.remove('edge-right', 'edge-bottom');
+      classes.remove('edge-right', 'edge-bottom', 'has-cage-sum');
       if (colOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + 1)) classes.add('edge-right');
       if (rowOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + SIZE)) classes.add('edge-bottom');
     }
@@ -301,6 +301,9 @@ export class App {
     svg.setAttribute('viewBox', `0 0 ${SIZE} ${SIZE}`);
     svg.setAttribute('aria-hidden', 'true');
     for (const cage of puzzle.cages) {
+      const first = Math.min(...cage.cells);
+      this.cells[first]?.root.classList.add('has-cage-sum');
+
       const outline = document.createElementNS(SVG_NS, 'path');
       outline.setAttribute('class', 'cage-outline');
       outline.setAttribute('d', cageOutlinePath(cage.cells));
