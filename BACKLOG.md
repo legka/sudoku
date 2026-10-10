@@ -58,7 +58,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: `Game.toJSON()` serializes values and notes but omits `undoStack`. Refreshing the browser preserves board numbers but resets the undo history.
 - **Proposed Solution**: Include `undoStack?: Snapshot[]` in `GameSnapshot` so players can continue undoing previous moves after a reload.
 
-### [UX-04] Handling completed game reload
+### ~~[UX-04] Handling completed game reload~~
 - **Priority**: Low
 - **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L66-L72), [`src/ui/storage.ts`](file:///home/oleg/work/sudoku/src/ui/storage.ts)
 - **Description**: Reloading the page after completing a puzzle reloads the frozen, finished board without opening the win dialog or prompting for a new game.

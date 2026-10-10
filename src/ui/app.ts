@@ -69,7 +69,11 @@ export class App {
 
     const saved = loadSnapshot();
     if (saved) {
-      this.setGame(new Game(saved.puzzle, saved));
+      const game = new Game(saved.puzzle, saved);
+      this.setGame(game);
+      if (game.finished) {
+        this.showWin();
+      }
     } else {
       void this.newGame('classic', 'medium');
     }

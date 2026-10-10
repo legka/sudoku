@@ -39,3 +39,11 @@ export function saveSnapshot(snapshot: GameSnapshot): void {
     // Saving is a convenience; the game still works without it.
   }
 }
+
+export function clearSnapshot(): void {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    // Ignore storage errors
+  }
+}
