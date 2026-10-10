@@ -54,6 +54,7 @@ export class App {
     notes: byId<HTMLButtonElement>('notes'),
     hint: byId<HTMLButtonElement>('hint'),
     check: byId<HTMLButtonElement>('check'),
+    themeToggle: byId<HTMLButtonElement>('theme-toggle'),
     pad: byId<HTMLDivElement>('pad'),
     win: byId<HTMLDialogElement>('win'),
     winText: byId<HTMLParagraphElement>('win-text'),
@@ -62,6 +63,11 @@ export class App {
   };
 
   start(): void {
+    const savedTheme = localStorage.getItem('sudoku-theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
     this.buildBoard();
     this.buildPad();
     this.bindEvents();
@@ -140,6 +146,16 @@ export class App {
       }
       this.manualChecked = false;
       this.render();
+    });
+
+    this.ui.themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const isDark = current === 'dark' || (!current && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('sudoku-theme', next);
+      } catch {}
     });
 
     this.ui.newGame.addEventListener('click', () => this.startNewFromSettings());

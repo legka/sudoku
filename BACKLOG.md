@@ -64,7 +64,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: Reloading the page after completing a puzzle reloads the frozen, finished board without opening the win dialog or prompting for a new game.
 - **Proposed Solution**: Either clear snapshot from `localStorage` upon victory or detect `saved.finished` on load to present a "Start New Game" prompt.
 
-### [UX-05] User theme toggle switch
+### ~~[UX-05] User theme toggle switch~~
 - **Priority**: Low
 - **Files**: [`index.html`](file:///home/oleg/work/sudoku/index.html), [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L26-L71), [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts)
 - **Description**: CSS supports light and dark modes via `:root[data-theme='light']` and `:root[data-theme='dark']`, but there is no UI control or persistence to manually toggle themes independently of `prefers-color-scheme`.
