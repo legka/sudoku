@@ -70,7 +70,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: CSS supports light and dark modes via `:root[data-theme='light']` and `:root[data-theme='dark']`, but there is no UI control or persistence to manually toggle themes independently of `prefers-color-scheme`.
 - **Proposed Solution**: Add a theme switcher icon/button in the topbar and persist the selection in `localStorage`.
 
-### [UX-06] Mobile landscape layout responsiveness
+### ~~[UX-06] Mobile landscape layout responsiveness~~
 - **Priority**: Low
 - **Files**: [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L98-L106)
 - **Description**: On phones in landscape orientation (viewport height < 450px), the vertical flex column overflows and requires scrolling between the board and number pad.

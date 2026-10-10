@@ -483,3 +483,51 @@ select {
     display: none;
   }
 }
+
+/* ---- mobile landscape ---------------------------------------------- */
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .app {
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      "board topbar"
+      "board settings"
+      "board actions"
+      "board pad";
+    column-gap: 20px;
+    row-gap: 8px;
+    padding-top: calc(env(safe-area-inset-top) + 8px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+    align-items: start;
+  }
+
+  .topbar {
+    grid-area: topbar;
+  }
+
+  .settings {
+    grid-area: settings;
+  }
+
+  .board-wrap {
+    grid-area: board;
+    width: min(85vh, 480px);
+    max-width: min(85vh, 480px);
+  }
+
+  .actions {
+    grid-area: actions;
+  }
+
+  .pad {
+    grid-area: pad;
+  }
+
+  .help {
+    display: none;
+  }
+}
+
