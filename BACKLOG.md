@@ -40,7 +40,7 @@ Action items and improvements identified during codebase review, grouped by cate
 
 ## 2. UX & Game Mechanics Improvements
 
-### [UX-01] Accidental game reset on Mode / Difficulty change
+### ~~[UX-01] Accidental game reset on Mode / Difficulty change~~
 - **Priority**: Medium
 - **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L126-L127)
 - **Description**: `change` events on the `#mode` and `#difficulty` `<select>` elements immediately trigger `newGame()`. On mobile touch devices, scrolling or accidental taps destroy the current game without warning or confirmation.

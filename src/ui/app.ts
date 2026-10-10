@@ -123,8 +123,6 @@ export class App {
     this.ui.notes.addEventListener('click', () => this.toggleNotes());
 
     this.ui.newGame.addEventListener('click', () => this.startNewFromSettings());
-    this.ui.mode.addEventListener('change', () => this.startNewFromSettings());
-    this.ui.difficulty.addEventListener('change', () => this.startNewFromSettings());
 
     this.ui.winNew.addEventListener('click', () => {
       this.ui.win.close();
