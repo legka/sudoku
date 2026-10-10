@@ -1,0 +1,19 @@
+{
+  "name": "sudoku",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sudoku and Killer Sudoku for web and mobile web",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Sudoku and Killer Sudoku for web and mobile web." />
+    <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15171c" media="(prefers-color-scheme: dark)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23345'/%3E%3Cpath d='M5.5 0v16M10.5 0v16M0 5.5h16M0 10.5h16' stroke='%23fff' stroke-width='.8'/%3E%3C/svg%3E" />
+    <title>Sudoku</title>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <h1>Sudoku</h1>
+        <div class="stats">
+          <span class="stat"><span class="label">Time</span> <span id="timer">0:00</span></span>
+          <span class="stat"><span class="label">Mistakes</span> <span id="mistakes">0</span></span>
+        </div>
+      </header>
+
+      <section class="settings" aria-label="Game settings">
+        <label>
+          Mode
+          <select id="mode">
+            <option value="classic">Classic</option>
+            <option value="killer">Killer</option>
+          </select>
+        </label>
+        <label>
+          Difficulty
+          <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+            <option value="expert">Expert</option>
+          </select>
+        </label>
+        <button id="new-game" class="btn" type="button">New game</button>
+      </section>
+
+      <main class="board-wrap">
+        <div id="board" class="board" role="grid" aria-label="Sudoku board"></div>
+        <div id="loading" class="loading" role="status" hidden></div>
+      </main>
+
+      <nav class="actions" aria-label="Actions">
+        <button id="undo" class="btn" type="button" disabled>Undo</button>
+        <button id="erase" class="btn" type="button">Erase</button>
+        <button id="notes" class="btn" type="button" aria-pressed="false">Notes</button>
+        <button id="hint" class="btn" type="button">Hint</button>
+      </nav>
+
+      <div id="pad" class="pad" aria-label="Number pad"></div>
+
+      <p class="help">
+        Tap a cell, then a number. Notes mode adds pencil marks. Keyboard: 1–9, Backspace, N, H, Ctrl+Z.
+      </p>
+    </div>
+
+    <dialog id="win" class="win">
+      <h2>Solved!</h2>
+      <p id="win-text"></p>
+      <div class="win-actions">
+        <button id="win-close" class="btn" type="button">Close</button>
+        <button id="win-new" class="btn primary" type="button">New game</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
