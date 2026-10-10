@@ -6,7 +6,7 @@ Action items and improvements identified during codebase review, grouped by cate
 
 ## 1. Bugs & Functional Defects
 
-### [BUG-01] Generation error message swallowed immediately
+### ~~[BUG-01] Generation error message swallowed immediately~~
 - **Priority**: High
 - **Files**: [`src/ui/app.ts`](file:///home/oleg/work/sudoku/src/ui/app.ts#L222-L231)
 - **Description**: In `App.newGame()`, the `catch` block unhides the loading message to display `"Could not create a puzzle. Please try again."`, but the `finally` block immediately calls `setBusy(false)`, which unconditionally resets `this.ui.loading.hidden = true;`. The error message is therefore never visible to the user.

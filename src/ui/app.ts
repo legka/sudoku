@@ -215,6 +215,7 @@ export class App {
   private async newGame(mode: Mode, difficulty: Difficulty): Promise<void> {
     const id = ++this.requestId;
     this.setBusy(true);
+    let hasError = false;
     try {
       const puzzle = await requestPuzzle(mode, difficulty);
       if (id !== this.requestId) return;
@@ -222,11 +223,16 @@ export class App {
     } catch (error) {
       console.error(error);
       if (id === this.requestId) {
-        this.ui.loading.textContent = 'Could not create a puzzle. Please try again.';
-        this.ui.loading.hidden = false;
+        hasError = true;
       }
     } finally {
-      if (id === this.requestId) this.setBusy(false);
+      if (id === this.requestId) {
+        this.setBusy(false);
+        if (hasError) {
+          this.ui.loading.textContent = 'Could not create a puzzle. Please try again.';
+          this.ui.loading.hidden = false;
+        }
+      }
     }
   }
 
