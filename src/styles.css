@@ -296,6 +296,10 @@ select {
   background: var(--cell-selected);
 }
 
+.cell:active {
+  background: var(--cell-selected);
+}
+
 .value {
   font-size: 7.4cqw;
   font-weight: 500;

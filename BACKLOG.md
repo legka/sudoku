@@ -76,7 +76,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: On phones in landscape orientation (viewport height < 450px), the vertical flex column overflows and requires scrolling between the board and number pad.
 - **Proposed Solution**: Add landscape media queries placing the board and controls side by side.
 
-### [UX-07] Immediate tactile feedback: add `:active` state to board cells
+### ~~[UX-07] Immediate tactile feedback: add `:active` state to board cells~~
 - **Priority**: Low
 - **Files**: [`src/styles.css`](file:///home/oleg/work/sudoku/src/styles.css#L229-L241)
 - **Description**: While buttons have an active press state (`transform: translateY(1px)`), `.cell` lacks any `:active` styling. On touchscreens, there is zero immediate visual feedback when the player touches a cell until the full touch sequence completes and fires `click`.
