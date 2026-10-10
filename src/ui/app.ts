@@ -39,6 +39,7 @@ export class App {
   private cageLayer: SVGSVGElement | null = null;
 
   private manualChecked = false;
+  private readonly padKeys: HTMLButtonElement[] = [];
 
   private readonly ui = {
     board: byId<HTMLDivElement>('board'),
@@ -136,6 +137,7 @@ export class App {
       key.textContent = String(d);
       key.addEventListener('click', () => this.input(d));
       this.ui.pad.appendChild(key);
+      this.padKeys.push(key);
     }
   }
 
@@ -459,6 +461,12 @@ export class App {
     this.ui.hint.disabled = g.finished;
     this.ui.erase.disabled = g.finished;
     this.ui.check.disabled = g.finished;
+    for (let d = 1; d <= SIZE; d++) {
+      const key = this.padKeys[d - 1];
+      if (key) {
+        key.disabled = g.finished || g.isDigitCompleted(d);
+      }
+    }
   }
 
   /** Whether cell i shares a row, column, box or (killer) cage with cell sel. */

@@ -1,4 +1,4 @@
-import { CELLS, Grid, Puzzle } from './types';
+import { CELLS, Grid, Puzzle, SIZE } from './types';
 import { PEERS, bit } from './rules';
 
 interface Snapshot {
@@ -82,6 +82,17 @@ export class Game {
     return this.values.every((v, i) => v === this.puzzle.solution[i]);
   }
 
+  /** Whether all instances of digit d (1–9) have been correctly filled in. */
+  isDigitCompleted(d: number): boolean {
+    let count = 0;
+    for (let i = 0; i < CELLS; i++) {
+      if (this.values[i] === d && this.puzzle.solution[i] === d) {
+        count++;
+      }
+    }
+    return count === SIZE;
+  }
+
   select(i: number | null): void {
     this.selected = i;
   }
@@ -92,7 +103,7 @@ export class Game {
    */
   inputDigit(d: number, noteMode: boolean): boolean {
     const i = this.selected;
-    if (this.finished || i === null || this.isGiven(i)) return false;
+    if (this.finished || i === null || this.isGiven(i) || this.isDigitCompleted(d)) return false;
 
     if (noteMode) {
       if (this.values[i] !== 0) return false;

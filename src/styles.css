@@ -464,6 +464,13 @@ select {
   transform: translateY(1px);
 }
 
+.key:disabled {
+  opacity: 0.25;
+  color: var(--muted);
+  box-shadow: none;
+  cursor: default;
+}
+
 .help {
   margin: 4px 0 0;
   font-size: 0.8rem;

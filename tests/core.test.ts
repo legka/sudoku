@@ -231,4 +231,29 @@ describe('Game', () => {
     expect(g.mistakes).toBe(0);
     expect(g.checkMistakes()).toBe(1);
   });
+
+  it('detects when all instances of a digit are completed', () => {
+    const p = puzzle();
+    const g = new Game(p);
+    const ones = p.solution.flatMap((v, i) => (v === 1 ? [i] : []));
+    expect(ones).toHaveLength(9);
+    expect(g.isDigitCompleted(1)).toBe(false);
+
+    for (const i of ones) {
+      if (!g.isGiven(i)) {
+        g.select(i);
+        g.inputDigit(1, false);
+      }
+    }
+    expect(g.isDigitCompleted(1)).toBe(true);
+
+    const nonOne = p.solution.findIndex((v, i) => v !== 1 && !g.isGiven(i));
+    g.select(nonOne);
+    expect(g.inputDigit(1, false)).toBe(false);
+
+    const filledOne = ones.find((i) => !g.isGiven(i))!;
+    g.select(filledOne);
+    g.erase();
+    expect(g.isDigitCompleted(1)).toBe(false);
+  });
 });
