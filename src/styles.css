@@ -264,33 +264,34 @@ select {
   min-width: 0;
   background: var(--cell);
   cursor: pointer;
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
   transition: background-color 80ms linear;
   touch-action: manipulation;
-}
-
-.cell.edge-right {
-  border-right: 2px solid var(--line-strong);
-}
-
-.cell.edge-bottom {
-  border-bottom: 2px solid var(--line-strong);
 }
 
 .row {
   display: contents;
 }
 
-/* The last column and row sit on the board border. */
-.cell:nth-child(9n),
-.row .cell:last-child {
-  border-right: none;
+/* Grid lines layer drawn symmetrically over the board. */
+.grid-layer {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  pointer-events: none;
 }
 
-.cell:nth-child(n + 73),
-.row:last-child .cell {
-  border-bottom: none;
+.grid-line {
+  stroke: var(--line);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.grid-box-line {
+  stroke: var(--line-strong);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
 }
 
 .cell.peer {
@@ -315,14 +316,14 @@ select {
 
 .value {
   font-size: 7.4cqw;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--player);
   line-height: 1;
 }
 
 .cell.given .value {
   color: var(--given);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .cell.wrong .value {
@@ -331,7 +332,7 @@ select {
 
 .notes {
   position: absolute;
-  inset: 17% 9% 7% 9%;
+  inset: 26% 8% 6% 8%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -360,12 +361,12 @@ select {
 .cage-outline {
   fill: none;
   stroke: var(--cage-ink);
-  stroke-width: 0.035;
+  stroke-width: 0.022;
   stroke-dasharray: 0.1 0.07;
 }
 
 .cage-sum {
-  font-size: 0.17px;
+  font-size: 0.23px;
   font-weight: 700;
   fill: var(--cage-ink);
   dominant-baseline: hanging;
@@ -410,7 +411,7 @@ select {
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -471,13 +472,6 @@ select {
   cursor: default;
 }
 
-.help {
-  margin: 4px 0 0;
-  font-size: 0.8rem;
-  color: var(--muted);
-  text-align: center;
-}
-
 /* ---- win dialog ------------------------------------------------------ */
 
 .win {
@@ -526,10 +520,6 @@ select {
     font-size: 0.9rem;
     padding: 0 6px;
   }
-
-  .help {
-    display: none;
-  }
 }
 
 /* ---- mobile landscape ---------------------------------------------- */
@@ -572,10 +562,6 @@ select {
 
   .pad {
     grid-area: pad;
-  }
-
-  .help {
-    display: none;
   }
 }
 

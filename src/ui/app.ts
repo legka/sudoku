@@ -35,10 +35,11 @@ export class App {
   private ticks = 0;
   private cells: CellView[] = [];
   private cageOf: number[] = new Array<number>(CELLS).fill(-1);
+  /** SVG layer with grid lines; present for all puzzles. */
+  private gridLayer: SVGSVGElement | null = null;
   /** SVG layer with cage outlines and sums; absent for classic puzzles. */
   private cageLayer: SVGSVGElement | null = null;
 
-  private manualChecked = false;
   private readonly padKeys: HTMLButtonElement[] = [];
 
   private readonly ui = {
@@ -54,7 +55,6 @@ export class App {
     erase: byId<HTMLButtonElement>('erase'),
     notes: byId<HTMLButtonElement>('notes'),
     hint: byId<HTMLButtonElement>('hint'),
-    check: byId<HTMLButtonElement>('check'),
     themeToggle: byId<HTMLButtonElement>('theme-toggle'),
     pad: byId<HTMLDivElement>('pad'),
     win: byId<HTMLDialogElement>('win'),
@@ -127,6 +127,38 @@ export class App {
       }
       this.ui.board.appendChild(row);
     }
+    this.buildGridLayer();
+  }
+
+  private buildGridLayer(): void {
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('class', 'grid-layer');
+    svg.setAttribute('viewBox', `0 0 ${SIZE} ${SIZE}`);
+    svg.setAttribute('aria-hidden', 'true');
+
+    for (let i = 1; i < SIZE; i++) {
+      const isBox = i % 3 === 0;
+      const cls = isBox ? 'grid-box-line' : 'grid-line';
+
+      const vLine = document.createElementNS(SVG_NS, 'line');
+      vLine.setAttribute('x1', String(i));
+      vLine.setAttribute('y1', '0');
+      vLine.setAttribute('x2', String(i));
+      vLine.setAttribute('y2', String(SIZE));
+      vLine.setAttribute('class', cls);
+      svg.appendChild(vLine);
+
+      const hLine = document.createElementNS(SVG_NS, 'line');
+      hLine.setAttribute('x1', '0');
+      hLine.setAttribute('y1', String(i));
+      hLine.setAttribute('x2', String(SIZE));
+      hLine.setAttribute('y2', String(i));
+      hLine.setAttribute('class', cls);
+      svg.appendChild(hLine);
+    }
+
+    this.ui.board.insertAdjacentElement('afterend', svg);
+    this.gridLayer = svg;
   }
 
   private buildPad(): void {
@@ -153,16 +185,11 @@ export class App {
     this.ui.erase.addEventListener('click', () => this.afterChange(this.game?.erase()));
     this.ui.hint.addEventListener('click', () => this.afterChange(this.game?.hint()));
     this.ui.notes.addEventListener('click', () => this.toggleNotes());
-    this.ui.check.addEventListener('click', () => {
-      this.manualChecked = true;
-      this.render();
-    });
     this.ui.autoCheck.addEventListener('change', () => {
       if (this.game) {
         this.game.autoCheckMistakes = this.ui.autoCheck.checked;
         this.persist();
       }
-      this.manualChecked = false;
       this.render();
     });
 
@@ -211,9 +238,6 @@ export class App {
       this.toggleNotes();
     } else if (key === 'h' || key === 'H') {
       this.afterChange(this.game.hint());
-    } else if (key === 'c' || key === 'C') {
-      this.manualChecked = true;
-      this.render();
     } else if (key === 'u' || key === 'U') {
       this.afterChange(this.game.undo());
     } else if (key.startsWith('Arrow')) {
@@ -260,7 +284,6 @@ export class App {
   private afterChange(changed: boolean | undefined): void {
     if (!this.game) return;
     if (changed) {
-      this.manualChecked = false;
       this.persist();
       if (this.game.finished) this.showWin();
     }
@@ -312,7 +335,6 @@ export class App {
 
   private setGame(game: Game): void {
     this.game = game;
-    this.manualChecked = false;
     this.ui.mode.value = game.puzzle.mode;
     this.ui.difficulty.value = game.puzzle.difficulty;
     this.ui.autoCheck.checked = game.autoCheckMistakes;
@@ -344,17 +366,10 @@ export class App {
 
   // ---- rendering ----------------------------------------------------------
 
-  /** Sets box borders, and draws cage outlines and sums. Runs once per puzzle. */
+  /** Draws cage outlines and sums. Runs once per puzzle. */
   private layoutPuzzle(): void {
     const puzzle = this.game!.puzzle;
     this.cageOf = cageIndexOf(puzzle.cages);
-
-    for (let i = 0; i < CELLS; i++) {
-      const classes = this.cells[i].root.classList;
-      classes.remove('edge-right', 'edge-bottom');
-      if (colOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + 1)) classes.add('edge-right');
-      if (rowOf(i) < SIZE - 1 && boxOf(i) !== boxOf(i + SIZE)) classes.add('edge-bottom');
-    }
 
     this.cageLayer?.remove();
     this.cageLayer = null;
@@ -385,8 +400,8 @@ export class App {
       const c = colOf(first);
       const r = rowOf(first);
       const digits = String(cage.sum).length;
-      const maskW = digits === 1 ? 0.17 : 0.32;
-      const maskH = 0.16;
+      const maskW = digits === 1 ? 0.21 : 0.40;
+      const maskH = 0.22;
 
       const maskCut = document.createElementNS(SVG_NS, 'rect');
       maskCut.setAttribute('x', String(round(c + 0.06)));
@@ -414,8 +429,12 @@ export class App {
     svg.insertBefore(outlinesGroup, svg.firstChild);
     svg.insertBefore(defs, svg.firstChild);
 
-    // Insert inside the board frame, above the cells.
-    this.ui.board.insertAdjacentElement('afterend', svg);
+    // Insert inside the board frame, above the grid lines and cells.
+    if (this.gridLayer) {
+      this.gridLayer.insertAdjacentElement('afterend', svg);
+    } else {
+      this.ui.board.insertAdjacentElement('afterend', svg);
+    }
     this.cageLayer = svg;
   }
 
@@ -425,7 +444,7 @@ export class App {
 
     const sel = g.selected;
     const selValue = sel === null ? 0 : g.values[sel];
-    const showWrong = g.autoCheckMistakes || this.manualChecked;
+    const showWrong = g.autoCheckMistakes;
     const activeIndex = sel !== null ? sel : 0;
 
     for (let i = 0; i < CELLS; i++) {
@@ -460,7 +479,6 @@ export class App {
     this.ui.notes.classList.toggle('active', this.noteMode);
     this.ui.hint.disabled = g.finished;
     this.ui.erase.disabled = g.finished;
-    this.ui.check.disabled = g.finished;
     for (let d = 1; d <= SIZE; d++) {
       const key = this.padKeys[d - 1];
       if (key) {
