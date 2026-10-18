@@ -138,7 +138,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: `.cell` sets `transition: background-color 80ms linear;`. Selecting a cell or entering a digit changes the background color of ~20–30 cells (selected cell, peers, and matching digits), animating non-composited `background-color` across all of them for 80ms and forcing per-frame repaints (and SVG mask re-compositing in Killer mode) on every interaction.
 - **Proposed Solution**: Remove `transition: background-color 80ms linear;` from `.cell` so cell selection and highlight states update instantaneously on the next frame.
 
-### [PERF-06] Defer snapshot persistence off the synchronous input/render path
+### ~~[PERF-06] Defer snapshot persistence off the synchronous input/render path~~
 - **Priority**: High
 - **Files**: [`src/ui/app.ts`](file:///home/oleg/github/legka/sudoku/src/ui/app.ts#L284-L356), [`src/core/game.ts`](file:///home/oleg/github/legka/sudoku/src/core/game.ts#L191-L204)
 - **Description**: `App.afterChange()` calls `this.persist()` synchronously before `this.render()`, and `App.tick()` calls `this.persist()` every 5 seconds. `Game.toJSON()` clones the entire `undoStack` (up to 500 entries of `values` and `notes` arrays), serializes it with `JSON.stringify`, and writes synchronously to `localStorage` on the main thread before the DOM updates.

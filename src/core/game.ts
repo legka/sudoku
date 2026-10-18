@@ -199,7 +199,7 @@ export class Game {
       elapsedSeconds: this.elapsedSeconds,
       finished: this.finished,
       autoCheckMistakes: this.autoCheckMistakes,
-      undoStack: this.undoStack.map((s) => ({ values: s.values.slice(), notes: s.notes.slice() })),
+      undoStack: this.undoStack.slice(),
     };
   }
 }

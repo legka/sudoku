@@ -33,6 +33,8 @@ export class App {
   private busy = false;
   private requestId = 0;
   private ticks = 0;
+  private persistHandle: number | null = null;
+  private persistIdle = false;
   private cells: CellView[] = [];
   private cageOf: number[] = new Array<number>(CELLS).fill(-1);
   /** SVG layer with grid lines; present for all puzzles. */
@@ -188,7 +190,7 @@ export class App {
     this.ui.autoCheck.addEventListener('change', () => {
       if (this.game) {
         this.game.autoCheckMistakes = this.ui.autoCheck.checked;
-        this.persist();
+        this.schedulePersist();
       }
       this.render();
     });
@@ -213,9 +215,9 @@ export class App {
 
     window.addEventListener('keydown', (event) => this.onKey(event));
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') this.persist();
+      if (document.visibilityState === 'hidden') this.flushPersist();
     });
-    window.addEventListener('pagehide', () => this.persist());
+    window.addEventListener('pagehide', () => this.flushPersist());
   }
 
   private onKey(event: KeyboardEvent): void {
@@ -283,11 +285,11 @@ export class App {
   /** Called after any action on the game; `changed` is what the action returned. */
   private afterChange(changed: boolean | undefined): void {
     if (!this.game) return;
-    if (changed) {
-      this.persist();
-      if (this.game.finished) this.showWin();
-    }
     this.render();
+    if (changed) {
+      if (this.game.finished) this.showWin();
+      this.schedulePersist();
+    }
   }
 
   private startNewFromSettings(): void {
@@ -339,8 +341,8 @@ export class App {
     this.ui.difficulty.value = game.puzzle.difficulty;
     this.ui.autoCheck.checked = game.autoCheckMistakes;
     this.layoutPuzzle();
-    this.persist();
     this.render();
+    this.schedulePersist();
   }
 
   private tick(): void {
@@ -348,7 +350,38 @@ export class App {
     if (!g || this.busy || g.finished || document.visibilityState !== 'visible') return;
     g.elapsedSeconds++;
     this.ui.timer.textContent = formatTime(g.elapsedSeconds);
-    if (++this.ticks % 5 === 0) this.persist();
+    if (++this.ticks % 5 === 0) this.schedulePersist();
+  }
+
+  private schedulePersist(): void {
+    if (this.persistHandle !== null) return;
+    if ('requestIdleCallback' in window) {
+      this.persistIdle = true;
+      this.persistHandle = window.requestIdleCallback(() => {
+        this.persistHandle = null;
+        this.persistIdle = false;
+        this.persist();
+      });
+    } else {
+      this.persistIdle = false;
+      this.persistHandle = setTimeout(() => {
+        this.persistHandle = null;
+        this.persist();
+      }, 0) as unknown as number;
+    }
+  }
+
+  private flushPersist(): void {
+    if (this.persistHandle !== null) {
+      if (this.persistIdle && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(this.persistHandle);
+      } else {
+        clearTimeout(this.persistHandle);
+      }
+      this.persistHandle = null;
+      this.persistIdle = false;
+    }
+    this.persist();
   }
 
   private persist(): void {
