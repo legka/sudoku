@@ -10,6 +10,11 @@ interface CellView {
   value: HTMLSpanElement;
   /** Pencil marks for digits 1..9. */
   notes: HTMLSpanElement[];
+  lastValue: number;
+  lastNotes: number;
+  lastFlags: number;
+  lastTabIndex: number;
+  lastSelected: boolean;
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -102,7 +107,8 @@ export class App {
         root.className = 'cell';
         root.dataset.index = String(i);
         root.setAttribute('role', 'gridcell');
-        root.tabIndex = i === 0 ? 0 : -1;
+        const tabIndex = i === 0 ? 0 : -1;
+        root.tabIndex = tabIndex;
         root.setAttribute('aria-selected', 'false');
         root.addEventListener('focus', () => {
           if (this.game && this.game.selected !== i) {
@@ -125,7 +131,16 @@ export class App {
 
         root.append(notesEl, value);
         row.appendChild(root);
-        this.cells.push({ root, value, notes });
+        this.cells.push({
+          root,
+          value,
+          notes,
+          lastValue: 0,
+          lastNotes: 0,
+          lastFlags: 0,
+          lastTabIndex: tabIndex,
+          lastSelected: false,
+        });
       }
       this.ui.board.appendChild(row);
     }
@@ -495,27 +510,59 @@ export class App {
     const selValue = sel === null ? 0 : g.values[sel];
     const showWrong = g.autoCheckMistakes;
     const activeIndex = sel !== null ? sel : 0;
+    const completedCounts = new Int32Array(SIZE + 1);
 
     for (let i = 0; i < CELLS; i++) {
       const view = this.cells[i];
       const v = g.values[i];
-      const isSelected = i === sel;
-      view.root.tabIndex = i === activeIndex ? 0 : -1;
-      view.root.setAttribute('aria-selected', String(isSelected));
-      const cls = view.root.classList;
-      cls.toggle('given', g.isGiven(i));
-      cls.toggle('wrong', showWrong && g.isWrong(i));
-      cls.toggle('selected', isSelected);
-      cls.toggle('peer', sel !== null && i !== sel && this.related(i, sel));
-      cls.toggle('same', selValue !== 0 && v === selValue && i !== sel);
+      if (v !== 0 && v === g.puzzle.solution[i]) {
+        completedCounts[v]++;
+      }
 
-      const valStr = v ? String(v) : '';
-      if (view.value.textContent !== valStr) view.value.textContent = valStr;
-      for (let d = 1; d <= SIZE; d++) {
-        const marked = !v && (g.notes[i] & bit(d)) !== 0;
-        const noteStr = marked ? String(d) : '';
-        const noteNode = view.notes[d - 1];
-        if (noteNode.textContent !== noteStr) noteNode.textContent = noteStr;
+      const isSelected = i === sel;
+      const tabIndex = i === activeIndex ? 0 : -1;
+      if (view.lastTabIndex !== tabIndex) {
+        view.root.tabIndex = tabIndex;
+        view.lastTabIndex = tabIndex;
+      }
+      if (view.lastSelected !== isSelected) {
+        view.root.setAttribute('aria-selected', String(isSelected));
+        view.lastSelected = isSelected;
+      }
+
+      const flags =
+        (g.isGiven(i) ? 1 : 0) |
+        (showWrong && g.isWrong(i) ? 2 : 0) |
+        (isSelected ? 4 : 0) |
+        (sel !== null && i !== sel && this.related(i, sel) ? 8 : 0) |
+        (selValue !== 0 && v === selValue && i !== sel ? 16 : 0);
+
+      if (view.lastFlags !== flags) {
+        const diff = view.lastFlags ^ flags;
+        const cls = view.root.classList;
+        if (diff & 1) cls.toggle('given', (flags & 1) !== 0);
+        if (diff & 2) cls.toggle('wrong', (flags & 2) !== 0);
+        if (diff & 4) cls.toggle('selected', (flags & 4) !== 0);
+        if (diff & 8) cls.toggle('peer', (flags & 8) !== 0);
+        if (diff & 16) cls.toggle('same', (flags & 16) !== 0);
+        view.lastFlags = flags;
+      }
+
+      if (view.lastValue !== v) {
+        view.value.textContent = v ? String(v) : '';
+        view.lastValue = v;
+      }
+
+      const effectiveNotes = v ? 0 : g.notes[i];
+      if (view.lastNotes !== effectiveNotes) {
+        const notesDiff = view.lastNotes ^ effectiveNotes;
+        for (let d = 1; d <= SIZE; d++) {
+          const mask = bit(d);
+          if (notesDiff & mask) {
+            view.notes[d - 1].textContent = (effectiveNotes & mask) !== 0 ? String(d) : '';
+          }
+        }
+        view.lastNotes = effectiveNotes;
       }
     }
 
@@ -531,7 +578,7 @@ export class App {
     for (let d = 1; d <= SIZE; d++) {
       const key = this.padKeys[d - 1];
       if (key) {
-        key.disabled = g.finished || g.isDigitCompleted(d);
+        key.disabled = g.finished || completedCounts[d] === SIZE;
       }
     }
   }

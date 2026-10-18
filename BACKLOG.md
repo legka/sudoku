@@ -150,7 +150,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: Board cells and number pad buttons listen to `click`, which only fires after finger release (`pointerup`), adding 50–120ms of touch contact latency and dropping fast taps when the finger drifts slightly. Furthermore, tapping a cell triggers both `focus` (which calls `select()` and `render()`) and `click` (which calls `select()` and `render()` a second time).
 - **Proposed Solution**: Use `pointerdown` for immediate board cell selection and number pad digit entry (while preserving keyboard activation on `click`), and guard selection so a single tap only renders once.
 
-### [PERF-08] Cache per-cell DOM state in `render()` to avoid redundant attribute, classList, and text accesses
+### ~~[PERF-08] Cache per-cell DOM state in `render()` to avoid redundant attribute, classList, and text accesses~~
 - **Priority**: Medium
 - **Files**: [`src/ui/app.ts`](file:///home/oleg/github/legka/sudoku/src/ui/app.ts#L441-L488)
 - **Description**: Every call to `App.render()` iterates over all 81 cells and unconditionally mutates `tabIndex`, calls `setAttribute('aria-selected', ...)` 81 times, invokes `classList.toggle` 405 times, reads 729 note `.textContent` properties, and recomputes `isDigitCompleted(d)` with 9 full-board scans.
