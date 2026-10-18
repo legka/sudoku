@@ -38,12 +38,11 @@ function getWorker(): Worker | null {
 }
 
 export function cancelPending(): void {
-  if (pending.size > 0) {
-    for (const job of pending.values()) {
-      job.reject(new Error('Superseded by a newer request'));
-    }
-    pending.clear();
+  if (pending.size === 0) return;
+  for (const job of pending.values()) {
+    job.reject(new Error('Superseded by a newer request'));
   }
+  pending.clear();
   if (worker) {
     worker.terminate();
     worker = null;

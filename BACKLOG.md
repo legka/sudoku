@@ -156,7 +156,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: Every call to `App.render()` iterates over all 81 cells and unconditionally mutates `tabIndex`, calls `setAttribute('aria-selected', ...)` 81 times, invokes `classList.toggle` 405 times, reads 729 note `.textContent` properties, and recomputes `isDigitCompleted(d)` with 9 full-board scans.
 - **Proposed Solution**: Track each cell's previous rendered state (value, notes bitmask, state flags, `tabIndex`, `aria-selected`) in `CellView` and compute digit completion counts in a single pass so `render()` only touches DOM nodes whose state actually changed.
 
-### [PERF-09] Reuse Web Worker across puzzle requests when idle instead of terminating every time
+### ~~[PERF-09] Reuse Web Worker across puzzle requests when idle instead of terminating every time~~
 - **Priority**: Medium
 - **Files**: [`src/ui/puzzle-client.ts`](file:///home/oleg/github/legka/sudoku/src/ui/puzzle-client.ts#L40-L56)
 - **Description**: `requestPuzzle()` unconditionally calls `cancelPending()`, which terminates and nulls `worker` even when `pending.size === 0`. Every "New game" request has to spawn a new Web Worker thread, load the module bundle, and cold-JIT the solver.
