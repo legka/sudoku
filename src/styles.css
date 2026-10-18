@@ -322,7 +322,6 @@ select {
 
 .cell.given .value {
   color: var(--given);
-  font-weight: 600;
 }
 
 .cell.wrong .value {
