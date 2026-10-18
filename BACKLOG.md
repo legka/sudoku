@@ -144,7 +144,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: `App.afterChange()` calls `this.persist()` synchronously before `this.render()`, and `App.tick()` calls `this.persist()` every 5 seconds. `Game.toJSON()` clones the entire `undoStack` (up to 500 entries of `values` and `notes` arrays), serializes it with `JSON.stringify`, and writes synchronously to `localStorage` on the main thread before the DOM updates.
 - **Proposed Solution**: Render first before persisting, debounce/schedule persistence asynchronously off the input path with immediate flush on `visibilitychange` / `pagehide`, and avoid deep-cloning immutable undo snapshots in `Game.toJSON()`.
 
-### [PERF-07] Handle cell selection and keypad input on pointerdown and eliminate duplicate focus+click renders
+### ~~[PERF-07] Handle cell selection and keypad input on pointerdown and eliminate duplicate focus+click renders~~
 - **Priority**: High
 - **Files**: [`src/ui/app.ts`](file:///home/oleg/github/legka/sudoku/src/ui/app.ts#L105-L182)
 - **Description**: Board cells and number pad buttons listen to `click`, which only fires after finger release (`pointerup`), adding 50–120ms of touch contact latency and dropping fast taps when the finger drifts slightly. Furthermore, tapping a cell triggers both `focus` (which calls `select()` and `render()`) and `click` (which calls `select()` and `render()` a second time).

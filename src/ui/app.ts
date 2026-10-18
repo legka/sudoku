@@ -169,19 +169,35 @@ export class App {
       key.type = 'button';
       key.className = 'key';
       key.textContent = String(d);
-      key.addEventListener('click', () => this.input(d));
+      key.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0 && event.pointerType === 'mouse') return;
+        event.preventDefault();
+        this.input(d);
+      });
+      key.addEventListener('click', (event) => {
+        if (event.detail === 0) this.input(d);
+      });
       this.ui.pad.appendChild(key);
       this.padKeys.push(key);
     }
   }
 
   private bindEvents(): void {
-    this.ui.board.addEventListener('click', (event) => {
+    const selectFromEvent = (event: Event): void => {
       const target = (event.target as HTMLElement).closest<HTMLElement>('.cell');
       if (!target || !this.game || this.busy) return;
-      this.game.select(Number(target.dataset.index));
-      this.render();
+      const index = Number(target.dataset.index);
+      if (this.game.selected !== index) {
+        this.game.select(index);
+        this.render();
+      }
+    };
+
+    this.ui.board.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 && event.pointerType === 'mouse') return;
+      selectFromEvent(event);
     });
+    this.ui.board.addEventListener('click', selectFromEvent);
 
     this.ui.undo.addEventListener('click', () => this.afterChange(this.game?.undo()));
     this.ui.erase.addEventListener('click', () => this.afterChange(this.game?.erase()));
