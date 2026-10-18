@@ -421,11 +421,22 @@ select {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 3px;
   padding: 4px 2px;
-  line-height: 1.15;
+  line-height: 1;
 }
 
-.actions .btn .shortcut {
+.action-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.action-title {
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--muted);
@@ -437,9 +448,9 @@ select {
   color: var(--primary-fg);
 }
 
-.actions .btn.active .shortcut {
+.actions .btn.active .action-title {
   color: var(--primary-fg);
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .pad {
