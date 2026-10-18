@@ -132,7 +132,7 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: In `fitsCage()`, candidate checking runs two loops (1 to 9 and 9 down to 1) for every digit to compute the lowest and highest sum achievable with remaining digits. During 2,000 merge attempts in Killer generation, this is called tens of thousands of times.
 - **Proposed Solution**: Precalculate triangular min/max sums for $k$ remaining numbers to speed up candidate pruning.
 
-### [PERF-05] Remove cell background-color CSS transition to eliminate 80ms tap lag and SVG mask repainting
+### ~~[PERF-05] Remove cell background-color CSS transition to eliminate 80ms tap lag and SVG mask repainting~~
 - **Priority**: High
 - **Files**: [`src/styles.css`](file:///home/oleg/github/legka/sudoku/src/styles.css#L259-L269)
 - **Description**: `.cell` sets `transition: background-color 80ms linear;`. Selecting a cell or entering a digit changes the background color of ~20–30 cells (selected cell, peers, and matching digits), animating non-composited `background-color` across all of them for 80ms and forcing per-frame repaints (and SVG mask re-compositing in Killer mode) on every interaction.

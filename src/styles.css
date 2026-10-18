@@ -264,7 +264,6 @@ select {
   min-width: 0;
   background: var(--cell);
   cursor: pointer;
-  transition: background-color 80ms linear;
   touch-action: manipulation;
 }
 
