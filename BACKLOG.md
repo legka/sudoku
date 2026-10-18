@@ -132,3 +132,32 @@ Action items and improvements identified during codebase review, grouped by cate
 - **Description**: In `fitsCage()`, candidate checking runs two loops (1 to 9 and 9 down to 1) for every digit to compute the lowest and highest sum achievable with remaining digits. During 2,000 merge attempts in Killer generation, this is called tens of thousands of times.
 - **Proposed Solution**: Precalculate triangular min/max sums for $k$ remaining numbers to speed up candidate pruning.
 
+### [PERF-05] Remove cell background-color CSS transition to eliminate 80ms tap lag and SVG mask repainting
+- **Priority**: High
+- **Files**: [`src/styles.css`](file:///home/oleg/github/legka/sudoku/src/styles.css#L259-L269)
+- **Description**: `.cell` sets `transition: background-color 80ms linear;`. Selecting a cell or entering a digit changes the background color of ~20–30 cells (selected cell, peers, and matching digits), animating non-composited `background-color` across all of them for 80ms and forcing per-frame repaints (and SVG mask re-compositing in Killer mode) on every interaction.
+- **Proposed Solution**: Remove `transition: background-color 80ms linear;` from `.cell` so cell selection and highlight states update instantaneously on the next frame.
+
+### [PERF-06] Defer snapshot persistence off the synchronous input/render path
+- **Priority**: High
+- **Files**: [`src/ui/app.ts`](file:///home/oleg/github/legka/sudoku/src/ui/app.ts#L284-L356), [`src/core/game.ts`](file:///home/oleg/github/legka/sudoku/src/core/game.ts#L191-L204)
+- **Description**: `App.afterChange()` calls `this.persist()` synchronously before `this.render()`, and `App.tick()` calls `this.persist()` every 5 seconds. `Game.toJSON()` clones the entire `undoStack` (up to 500 entries of `values` and `notes` arrays), serializes it with `JSON.stringify`, and writes synchronously to `localStorage` on the main thread before the DOM updates.
+- **Proposed Solution**: Render first before persisting, debounce/schedule persistence asynchronously off the input path with immediate flush on `visibilitychange` / `pagehide`, and avoid deep-cloning immutable undo snapshots in `Game.toJSON()`.
+
+### [PERF-07] Handle cell selection and keypad input on pointerdown and eliminate duplicate focus+click renders
+- **Priority**: High
+- **Files**: [`src/ui/app.ts`](file:///home/oleg/github/legka/sudoku/src/ui/app.ts#L105-L182)
+- **Description**: Board cells and number pad buttons listen to `click`, which only fires after finger release (`pointerup`), adding 50–120ms of touch contact latency and dropping fast taps when the finger drifts slightly. Furthermore, tapping a cell triggers both `focus` (which calls `select()` and `render()`) and `click` (which calls `select()` and `render()` a second time).
+- **Proposed Solution**: Use `pointerdown` for immediate board cell selection and number pad digit entry (while preserving keyboard activation on `click`), and guard selection so a single tap only renders once.
+
+### [PERF-08] Cache per-cell DOM state in `render()` to avoid redundant attribute, classList, and text accesses
+- **Priority**: Medium
+- **Files**: [`src/ui/app.ts`](file:///home/oleg/github/legka/sudoku/src/ui/app.ts#L441-L488)
+- **Description**: Every call to `App.render()` iterates over all 81 cells and unconditionally mutates `tabIndex`, calls `setAttribute('aria-selected', ...)` 81 times, invokes `classList.toggle` 405 times, reads 729 note `.textContent` properties, and recomputes `isDigitCompleted(d)` with 9 full-board scans.
+- **Proposed Solution**: Track each cell's previous rendered state (value, notes bitmask, state flags, `tabIndex`, `aria-selected`) in `CellView` and compute digit completion counts in a single pass so `render()` only touches DOM nodes whose state actually changed.
+
+### [PERF-09] Reuse Web Worker across puzzle requests when idle instead of terminating every time
+- **Priority**: Medium
+- **Files**: [`src/ui/puzzle-client.ts`](file:///home/oleg/github/legka/sudoku/src/ui/puzzle-client.ts#L40-L56)
+- **Description**: `requestPuzzle()` unconditionally calls `cancelPending()`, which terminates and nulls `worker` even when `pending.size === 0`. Every "New game" request has to spawn a new Web Worker thread, load the module bundle, and cold-JIT the solver.
+- **Proposed Solution**: Only terminate the worker in `cancelPending()` when a generation job is actually in flight (`pending.size > 0`), reusing the warm worker instance whenever it is idle.
