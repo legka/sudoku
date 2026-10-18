@@ -1,6 +1,7 @@
 import { generatePuzzle } from '../core/generate';
 import type { Difficulty, Mode, Puzzle } from '../core/types';
 import type { GenerateRequest } from './generator.worker';
+import GeneratorWorker from './generator.worker?worker&inline';
 
 interface Reply {
   id: number;
@@ -8,7 +9,14 @@ interface Reply {
   error?: string;
 }
 
-const pending = new Map<number, { resolve: (p: Puzzle) => void; reject: (e: Error) => void }>();
+interface PendingJob {
+  mode: Mode;
+  difficulty: Difficulty;
+  resolve: (p: Puzzle) => void;
+  reject: (e: Error) => void;
+}
+
+const pending = new Map<number, PendingJob>();
 let worker: Worker | null = null;
 let nextId = 0;
 
@@ -16,7 +24,7 @@ function getWorker(): Worker | null {
   if (worker) return worker;
   if (typeof Worker === 'undefined') return null;
   try {
-    worker = new Worker(new URL('./generator.worker.ts', import.meta.url), { type: 'module' });
+    worker = new GeneratorWorker();
   } catch {
     return null;
   }
@@ -28,11 +36,18 @@ function getWorker(): Worker | null {
     if (puzzle) job.resolve(puzzle);
     else job.reject(new Error(error ?? 'Puzzle generation failed'));
   };
-  worker.onerror = (event) => {
-    for (const job of pending.values()) job.reject(new Error(event.message));
+  worker.onerror = () => {
+    const jobs = [...pending.values()];
     pending.clear();
     worker?.terminate();
     worker = null;
+    for (const job of jobs) {
+      try {
+        job.resolve(generatePuzzle(job.mode, job.difficulty));
+      } catch (err) {
+        job.reject(err instanceof Error ? err : new Error(String(err)));
+      }
+    }
   };
   return worker;
 }
@@ -58,7 +73,7 @@ export function requestPuzzle(mode: Mode, difficulty: Difficulty): Promise<Puzzl
 
   return new Promise((resolve, reject) => {
     const id = ++nextId;
-    pending.set(id, { resolve, reject });
+    pending.set(id, { mode, difficulty, resolve, reject });
     const request: GenerateRequest = { id, mode, difficulty };
     w.postMessage(request);
   });
