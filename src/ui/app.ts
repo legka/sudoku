@@ -15,6 +15,7 @@ interface CellView {
   lastFlags: number;
   lastTabIndex: number;
   lastSelected: boolean;
+  lastHighlightNote: number;
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -140,6 +141,7 @@ export class App {
           lastFlags: 0,
           lastTabIndex: tabIndex,
           lastSelected: false,
+          lastHighlightNote: 0,
         });
       }
       this.ui.board.appendChild(row);
@@ -508,6 +510,7 @@ export class App {
 
     const sel = g.selected;
     const selValue = sel === null ? 0 : g.values[sel];
+    const highlightDigit = sel !== null && selValue !== 0 && !g.isWrong(sel) ? selValue : 0;
     const showWrong = g.autoCheckMistakes;
     const activeIndex = sel !== null ? sel : 0;
     const completedCounts = new Int32Array(SIZE + 1);
@@ -563,6 +566,18 @@ export class App {
           }
         }
         view.lastNotes = effectiveNotes;
+      }
+
+      const cellHighlightNote =
+        highlightDigit !== 0 && (effectiveNotes & bit(highlightDigit)) !== 0 ? highlightDigit : 0;
+      if (view.lastHighlightNote !== cellHighlightNote) {
+        if (view.lastHighlightNote !== 0) {
+          view.notes[view.lastHighlightNote - 1].classList.remove('same');
+        }
+        if (cellHighlightNote !== 0) {
+          view.notes[cellHighlightNote - 1].classList.add('same');
+        }
+        view.lastHighlightNote = cellHighlightNote;
       }
     }
 

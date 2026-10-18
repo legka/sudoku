@@ -356,6 +356,11 @@ select {
   color: var(--muted);
 }
 
+.notes span.same {
+  color: var(--player);
+  font-weight: 700;
+}
+
 /* Killer cage outlines and sums, drawn over the board in cell units. */
 .cage-layer {
   position: absolute;
