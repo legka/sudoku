@@ -10,17 +10,17 @@ const CLASSIC_CLUES: Record<Difficulty, number> = {
   expert: 23,
 };
 
-/** Killer: target number of cages, and the largest allowed cage. */
-const KILLER_CAGES: Record<Difficulty, { cages: number; maxSize: number }> = {
-  easy: { cages: 36, maxSize: 3 },
-  medium: { cages: 29, maxSize: 4 },
-  hard: { cages: 23, maxSize: 4 },
-  expert: { cages: 22, maxSize: 5 },
+/** Killer: target number of cages, largest allowed cage, and max single-cell cages. */
+const KILLER_CAGES: Record<Difficulty, { cages: number; maxSize: number; maxSingles: number }> = {
+  easy: { cages: 38, maxSize: 3, maxSingles: 6 },
+  medium: { cages: 31, maxSize: 4, maxSingles: 2 },
+  hard: { cages: 26, maxSize: 5, maxSingles: 0 },
+  expert: { cages: 22, maxSize: 6, maxSingles: 0 },
 };
 
 const KILLER_MAX_ATTEMPTS = 2000;
 /** Search budget for one uniqueness check; a merge that cannot be verified in time is skipped. */
-const KILLER_NODE_BUDGET = 4_000;
+const KILLER_NODE_BUDGET = 6_000;
 /** Generation stops merging after this long, keeping the (always unique) puzzle so far. */
 const KILLER_TIME_BUDGET_MS = 1_500;
 
@@ -61,12 +61,13 @@ export function generateClassic(difficulty: Difficulty): Puzzle {
 
 /**
  * Killer: begins with every cell in its own cage (which fixes the solution)
- * and merges neighbouring cages at random. A merge is kept only if the
- * puzzle still has exactly one solution.
+ * and merges neighbouring cages at random. Single-cell cages are prioritized
+ * first down to `maxSingles`, then general merges proceed toward `targetCages`.
+ * A merge is kept only if the puzzle still has exactly one solution.
  */
 export function generateKiller(difficulty: Difficulty): Puzzle {
   const solution = generateSolvedGrid();
-  const { cages: targetCages, maxSize } = KILLER_CAGES[difficulty];
+  const { cages: targetCages, maxSize, maxSingles } = KILLER_CAGES[difficulty];
 
   let cages: number[][] = [...Array(CELLS).keys()].map((i) => [i]);
   let cageOf = [...Array(CELLS).keys()];
@@ -81,23 +82,67 @@ export function generateKiller(difficulty: Difficulty): Puzzle {
     cells.reduce((mask, i) => mask | bit(solution[i]), 0);
 
   const deadline = performance.now() + KILLER_TIME_BUDGET_MS;
+  const blockedPairs = new Set<string>();
+
   for (
     let attempt = 0;
-    attempt < KILLER_MAX_ATTEMPTS && cages.length > targetCages && performance.now() < deadline;
+    attempt < KILLER_MAX_ATTEMPTS && performance.now() < deadline;
     attempt++
   ) {
-    const i = Math.floor(Math.random() * CELLS);
-    const neighbours = PEERS[i].filter((j) => isOrthogonal(i, j) && cageOf[j] !== cageOf[i]);
-    if (neighbours.length === 0) continue;
-    const j = neighbours[Math.floor(Math.random() * neighbours.length)];
+    const singleCageIndices: number[] = [];
+    for (let c = 0; c < cages.length; c++) {
+      if (cages[c].length === 1) singleCageIndices.push(c);
+    }
 
-    const a = cageOf[i];
-    const b = cageOf[j];
+    const needSingleMerge = singleCageIndices.length > maxSingles;
+    if (!needSingleMerge && cages.length <= targetCages) break;
+
+    let a: number;
+    if (needSingleMerge) {
+      a = singleCageIndices[Math.floor(Math.random() * singleCageIndices.length)];
+    } else {
+      const i = Math.floor(Math.random() * CELLS);
+      a = cageOf[i];
+    }
+
+    const maskA = digitMask(cages[a]);
+    const neighborCages = new Set<number>();
+    for (const cell of cages[a]) {
+      for (const peer of PEERS[cell]) {
+        if (isOrthogonal(cell, peer) && cageOf[peer] !== a) {
+          neighborCages.add(cageOf[peer]);
+        }
+      }
+    }
+
+    const allowedMax = needSingleMerge && maxSingles === 0 ? maxSize + 1 : maxSize;
+    const candidates = [...neighborCages].filter((b) => {
+      const mergedLen = cages[a].length + cages[b].length;
+      if (mergedLen > (cages[a].length === 1 && cages[b].length === maxSize ? allowedMax : maxSize)) {
+        return false;
+      }
+      if (maskA & digitMask(cages[b])) return false;
+      const key =
+        cages[a][0] < cages[b][0]
+          ? `${cages[a].join(',')}|${cages[b].join(',')}`
+          : `${cages[b].join(',')}|${cages[a].join(',')}`;
+      return !blockedPairs.has(key);
+    });
+
+    if (candidates.length === 0) {
+      if (needSingleMerge && singleCageIndices.every((s) => s === a)) break;
+      continue;
+    }
+
+    // Prefer merging with smaller neighbour cages so singletons pair up first.
+    shuffle(candidates).sort((x, y) => cages[x].length - cages[y].length);
+    const b = candidates[0];
+    const pairKey =
+      cages[a][0] < cages[b][0]
+        ? `${cages[a].join(',')}|${cages[b].join(',')}`
+        : `${cages[b].join(',')}|${cages[a].join(',')}`;
+
     const merged = [...cages[a], ...cages[b]];
-    if (merged.length > maxSize) continue;
-    // Digits within one cage must be distinct.
-    if (digitMask(cages[a]) & digitMask(cages[b])) continue;
-
     const next = cages.filter((_, k) => k !== a && k !== b);
     next.push(merged);
     const solutions = countSolutions(
@@ -106,7 +151,10 @@ export function generateKiller(difficulty: Difficulty): Puzzle {
       2,
       KILLER_NODE_BUDGET,
     );
-    if (solutions !== 1) continue;
+    if (solutions !== 1) {
+      blockedPairs.add(pairKey);
+      continue;
+    }
 
     cages = next;
     cageOf = new Array<number>(CELLS).fill(-1);

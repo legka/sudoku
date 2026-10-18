@@ -104,6 +104,19 @@ describe('killer generator', () => {
     },
     20_000,
   );
+
+  it(
+    'produces fewer cages and fewer single-cell cages on harder levels',
+    () => {
+      const easy = generateKiller('easy');
+      const hard = generateKiller('hard');
+      const singles = (p: Puzzle) => p.cages.filter((c) => c.cells.length === 1).length;
+
+      expect(easy.cages.length).toBeGreaterThan(hard.cages.length);
+      expect(singles(hard)).toBeLessThanOrEqual(singles(easy));
+    },
+    20_000,
+  );
 });
 
 describe('Game', () => {

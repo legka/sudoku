@@ -92,67 +92,77 @@ function unplace(ctx: Context, i: number, d: number): void {
   }
 }
 
-const MIN_SUM = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45];
-const MAX_SUM = [0, 9, 17, 24, 30, 35, 39, 42, 44, 45];
+/**
+ * Precomputed valid digit-set bitmasks (bits 1..9) indexed by [count][sum].
+ * Across all (count, sum) pairs there are only 511 non-empty subsets of {1..9}.
+ */
+const CAGE_COMBOS: Uint16Array[][] = Array.from({ length: SIZE + 1 }, () =>
+  Array.from({ length: 46 }, () => new Uint16Array(0)),
+);
 
-const MIN_BOUNDS = new Int16Array(10 * 1024);
-const MAX_BOUNDS = new Int16Array(10 * 1024);
-
-for (let k = 1; k <= SIZE; k++) {
-  for (let mask = 0; mask < 1024; mask++) {
-    const idx = (k << 10) | mask;
-    let low = 0;
-    let takenLow = 0;
-    for (let x = 1; x <= SIZE && takenLow < k; x++) {
-      if (!(mask & bit(x))) {
-        low += x;
-        takenLow++;
+{
+  const buckets: number[][][] = Array.from({ length: SIZE + 1 }, () =>
+    Array.from({ length: 46 }, () => []),
+  );
+  for (let mask = 2; mask <= ALL_DIGITS; mask += 2) {
+    let count = 0;
+    let sum = 0;
+    for (let d = 1; d <= SIZE; d++) {
+      if (mask & bit(d)) {
+        count++;
+        sum += d;
       }
     }
-    MIN_BOUNDS[idx] = takenLow === k ? low : 999;
-
-    let high = 0;
-    let takenHigh = 0;
-    for (let x = SIZE; x >= 1 && takenHigh < k; x--) {
-      if (!(mask & bit(x))) {
-        high += x;
-        takenHigh++;
+    buckets[count][sum].push(mask);
+  }
+  for (let k = 1; k <= SIZE; k++) {
+    for (let s = 1; s <= 45; s++) {
+      if (buckets[k][s].length > 0) {
+        CAGE_COMBOS[k][s] = new Uint16Array(buckets[k][s]);
       }
     }
-    MAX_BOUNDS[idx] = takenHigh === k ? high : -1;
   }
 }
 
-/**
- * Whether digit d can still go into the cage of cell i: it must be new to the
- * cage, and the cells still empty must be able to make up the remaining sum
- * with distinct digits (checked against the smallest and largest possible totals).
- */
-function fitsCage(ctx: Context, c: number, d: number): boolean {
-  if (ctx.cageMask[c] & bit(d)) return false;
-  const cage = ctx.cages[c];
-  const sum = ctx.cageSum[c] + d;
-  if (sum > cage.sum) return false;
-  const remaining = cage.cells.length - (ctx.cageFilled[c] + 1);
-  if (remaining === 0) return sum === cage.sum;
-
-  const need = cage.sum - sum;
-  if (need < MIN_SUM[remaining] || need > MAX_SUM[remaining]) return false;
-
-  const used = ctx.cageMask[c] | bit(d);
-  const idx = (remaining << 10) | used;
-  return need >= MIN_BOUNDS[idx] && need <= MAX_BOUNDS[idx];
+function rawAvail(ctx: Context, i: number): number {
+  return ALL_DIGITS & ~(ctx.rows[rowOf(i)] | ctx.cols[colOf(i)] | ctx.boxes[boxOf(i)]);
 }
 
 function candidates(ctx: Context, i: number): number {
-  let avail = ALL_DIGITS & ~(ctx.rows[rowOf(i)] | ctx.cols[colOf(i)] | ctx.boxes[boxOf(i)]);
+  const avail = rawAvail(ctx, i);
   const c = ctx.cageOf[i];
-  if (c < 0) return avail;
-  let result = 0;
-  for (let d = 1; d <= SIZE; d++) {
-    if (avail & bit(d) && fitsCage(ctx, c, d)) result |= bit(d);
+  if (c < 0 || avail === 0) return avail;
+
+  const cage = ctx.cages[c];
+  const rem = cage.cells.length - ctx.cageFilled[c];
+  const need = cage.sum - ctx.cageSum[c];
+  if (rem <= 0 || need <= 0 || need > 45) return 0;
+
+  const combos = CAGE_COMBOS[rem][need];
+  if (combos.length === 0) return 0;
+
+  const used = ctx.cageMask[c];
+  if (rem === 1) {
+    return need <= SIZE && !(used & bit(need)) ? avail & bit(need) : 0;
   }
-  return result;
+
+  let unionAvail = avail;
+  for (let k = 0; k < cage.cells.length; k++) {
+    const cell = cage.cells[k];
+    if (cell !== i && ctx.v[cell] === 0) {
+      unionAvail |= rawAvail(ctx, cell);
+    }
+  }
+  const allowed = unionAvail & ~used;
+
+  let validDigits = 0;
+  for (let idx = 0; idx < combos.length; idx++) {
+    const m = combos[idx];
+    if ((m & allowed) === m) {
+      validDigits |= m;
+    }
+  }
+  return avail & validDigits;
 }
 
 function shuffleInPlace<T>(items: T[]): void {
