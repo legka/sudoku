@@ -14,8 +14,10 @@
   --accent: #b5562b;
   --cage-ink: #34465e;
   --button: #ffffff;
+  --button-active: #eef1f7;
   --button-border: #d3d6dd;
   --primary: #2456c7;
+  --primary-active: #1d47a8;
   --primary-fg: #ffffff;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 16px rgb(0 0 0 / 0.06);
   --radius: 10px;
@@ -39,8 +41,10 @@
     --accent: #e08a5f;
     --cage-ink: #aab6cc;
     --button: #242833;
+    --button-active: #2e3442;
     --button-border: #3a3f4b;
     --primary: #4a7be0;
+    --primary-active: #3c69c7;
     --primary-fg: #ffffff;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
     color-scheme: dark;
@@ -63,8 +67,10 @@
   --accent: #e08a5f;
   --cage-ink: #aab6cc;
   --button: #242833;
+  --button-active: #2e3442;
   --button-border: #3a3f4b;
   --primary: #4a7be0;
+  --primary-active: #3c69c7;
   --primary-fg: #ffffff;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
   color-scheme: dark;
@@ -206,8 +212,8 @@ select {
   box-shadow: var(--shadow);
 }
 
-.btn:active {
-  transform: translateY(1px);
+.btn:not(:disabled):active {
+  background: var(--button-active);
 }
 
 .btn:disabled {
@@ -219,6 +225,10 @@ select {
   background: var(--primary);
   border-color: var(--primary);
   color: var(--primary-fg);
+}
+
+.btn.primary:not(:disabled):active {
+  background: var(--primary-active);
 }
 
 .settings .btn {
@@ -447,6 +457,10 @@ select {
   color: var(--primary-fg);
 }
 
+.actions .btn.active:not(:disabled):active {
+  background: var(--primary-active);
+}
+
 .actions .btn.active .action-title {
   color: var(--primary-fg);
   opacity: 0.9;
@@ -471,8 +485,8 @@ select {
   cursor: pointer;
 }
 
-.key:active {
-  transform: translateY(1px);
+.key:not(:disabled):active {
+  background: var(--button-active);
 }
 
 .key:disabled {
